@@ -1,0 +1,54 @@
+\begin{thebibliography}{1}
+
+\bibitem{BarthesFrade1999}
+{\sc Barthe, G., and Frade, M.~J.}
+\newblock Constructor subtyping.
+\newblock In {\em Programming Languages and Systems\/} (Berlin, Heidelberg,
+  1999), S.~D. Swierstra, Ed., Springer Berlin Heidelberg, pp.~109--127.
+
+\bibitem{LF1987}
+{\sc Harper, R., Honsell, F., and Plotkin, G.~D.}
+\newblock A framework for defining logics.
+\newblock In {\em Proceedings of the Symposium on Logic in Computer Science
+  {(LICS}'87), Ithaca, New York, USA, June 22-25, 1987\/} (1987), {IEEE}
+  Computer Society, pp.~194--204.
+
+\bibitem{LovasPfenning2010}
+{\sc Lovas, W., and Pfenning, F.}
+\newblock Refinement types for logical frameworks and their interpretation as
+  proof irrelevance.
+\newblock {\em Logical Methods in Computer Science 6}, 4 (dec 2010).
+
+\bibitem{McBride2011}
+{\sc McBride, C.}
+\newblock Ornamental algebras, algebraic ornaments, 2011.
+
+\bibitem{Nanevski2008}
+{\sc Nanevski, A., Pfenning, F., and Pientka, B.}
+\newblock Contextual modal type theory.
+\newblock {\em {ACM} Trans. Comput. Log. 9}, 3 (2008), 23:1--23:49.
+
+\bibitem{Pientka2008}
+{\sc Pientka, B.}
+\newblock A type-theoretic foundation for programming with higher-order
+  abstract syntax and first-class substitutions.
+\newblock In {\em Proceedings of the 35th {ACM} {SIGPLAN-SIGACT} Symposium on
+  Principles of Programming Languages, {POPL} 2008, San Francisco, California,
+  USA, January 7-12, 2008\/} (2008), G.~C. Necula and P.~Wadler, Eds., {ACM},
+  pp.~371--382.
+
+\bibitem{PientkaDunfield2008}
+{\sc Pientka, B., and Dunfield, J.}
+\newblock Programming with proofs and explicit contexts.
+\newblock In {\em Proceedings of the 10th International {ACM} {SIGPLAN}
+  Conference on Principles and Practice of Declarative Programming, July 15-17,
+  2008, Valencia, Spain\/} (2008), S.~Antoy and E.~Albert, Eds., {ACM},
+  pp.~163--173.
+
+\bibitem{Poll1997}
+{\sc Poll, E.}
+\newblock Subtyping and inheritance for inductive types.
+\newblock In {\em Proceedings of TYPES'97 Workshop on Subtyping, inheritance
+  and modular development of proofs, Durham, UK\/} (September 1997).
+
+\end{thebibliography}

@@ -1,0 +1,206 @@
+\documentclass[letterpaper, 11pt]{article}
+\usepackage{amsmath, amssymb, amsfonts}%math
+\usepackage{mathtools}
+\usepackage[left=2cm,right=2cm,top=2.75cm,bottom=2.75cm]{geometry}%margins
+\usepackage[utf8x]{inputenc}%ASCII characters
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}%for accentuated characters and accents
+\usepackage{graphicx}%inserting pdf-jpg pictures
+\usepackage[natural, dvipsnames, pdftex]{xcolor}
+\usepackage{tikz} %Drawing pretty pictures
+\usepackage{verbatim} %adding code
+\usepackage[pdftex,  colorlinks=true]{hyperref}%Hyperlinks, with \href
+\hypersetup{urlcolor=RoyalBlue,  linkcolor=RedOrange,  citecolor=black}
+
+\usepackage{proof} %for proof trees
+\usepackage{mathdots}
+
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{n} %mathpzc alphabet
+\usepackage[mathscr]{eucal} %mathscr alphabet
+
+%Redefine theorem environments
+\usepackage[amsmath,  thref,  thmmarks,  hyperref]{ntheorem}
+
+
+%Redefining theorem style
+\theoremheaderfont{\bf}
+\theorembodyfont{\normalfont}
+
+\newtheorem*{theorem}{Theorem}[section]
+\newtheorem*{lemma}[subsection]{Lemma}
+\newtheorem{cor}[subsection]{Corollary}
+\newtheorem{prop}[subsection]{Proposition}
+\newtheorem*{claim}{Claim}
+\newtheorem*{sol}{Solution}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{ex}{Example}[section]
+\newtheorem*{remark}{Remark}[section]
+\newtheorem*{obs}{Observation}[section]
+\newtheorem*{note}{Note}[section]
+\renewcommand{\Box}{\rule{1.5ex}{1.5ex}}  % end of proof
+
+
+\newenvironment*{proof}{\par\noindent{\normalfont{\bf{Proof. \\ \hphantom{mm}
+}}}}{\hfill \small$\blacksquare$\\[-4pt]}
+
+
+\usepackage{verbments}%fancy verbatim
+\usepackage[shortlabels]{enumitem}
+
+
+% Symbols
+\newcommand{\Rar}{\Rightarrow}
+\newcommand{\Lar}{\Leftarrow}
+
+
+%% keywords
+% Syntax
+\newcommand{\Type}{\texttt{Type}}
+\newcommand{\Rec}{\texttt{Rec}}
+\newcommand{\Sort}{\texttt{Sort}}
+\newcommand{\wk}{\texttt{wk}}
+\newcommand{\proj}{\texttt{proj}}
+\newcommand{\Clo}{\texttt{Clo}}
+
+% Judgments
+\newcommand{\world}{\texttt{world}}
+\newcommand{\schema}{\texttt{schema}}
+\newcommand{\ctx}{\texttt{ctx}}
+\newcommand{\mctx}{\texttt{mctx}}
+\newcommand{\sctx}{\texttt{sctx}}
+\newcommand{\sig}{\texttt{sig}}
+\newcommand{\kind}{\texttt{kind}}
+
+\title{Proof Reuse}
+\date{\today}
+\author{Antoine Gaulin}
+
+
+\begin{document}
+    \maketitle
+    
+    It is common in the literature to reuse proofs of previously established results in order to derive new theorems.  A common pattern in papers
+    is to start from a well understood language (often System F, LF, or the Calculus of Construction), add a new construct to it (e.g. subtyping,
+    inductive types, etc.), and then show that the desirable properties of the original system are preserved.  Most proofs (at least for the basic
+    properties) are by induction on the structure of the hypothesized derivation.  To conclude that the properties hold in the extension, it is then
+    clearly sufficient to consider only the cases relevant to the new construct.  However, in mechanization, one would need to work through all the
+    previously established cases once more.  This task is tedious and unnecessary.
+
+    We investigate a few ways to simplify the development of mechanized proofs, the key idea being to reuse proofs when possible.
+    The aim is to start from the type system of Beluga \cite{Pientka2008, PientkaDunfield2008} and look at a few extensions that allow 
+    various forms of proof reuse.
+    Through this process, we can also fix a major problem with how contexts are represented in Beluga, namely the inability to
+    recover premisses needed for the formation of assumptions.
+
+    The first direction is to extend the data-level type theory (i.e. the logical framework LF \cite{LF1987}) with refinements, 
+    thus allowing a restricted form of subtyping to the language.
+    This can then be lifted to context schemas, and then to the computation-level (i.e. the dependent contextual modal type theory \cite{Nanevski2008})
+    in a mostly straightforward way.  The main idea behind refinements is to ``separate'' a type into \textit{sorts}.  While types express
+    syntactic properties of terms, sorts express semantic properties.  They can therefore be used to enforce various properties on terms,
+    while preserving type uniqueness.  In this case, we obtain a notion of subsorting rather than subtyping.  Ultimately, refinements allow
+    a very limited form of proof reuse, and their usefulness is more in simplifying proofs.
+    
+    The second direction is to add constructor subtyping \cite{Poll1997, BarthesFrade1999}, which would be more accurately called \textit{supertyping}.
+    This idea is simple : if a type $B$ has all the constuctors of another type $A$ and possibly more, then $B$ can be viewed as a supertype of $A$.
+    In this setting, we get a notion of co-inheritance, similar to the inheritance mechanism found in object oriented programming.
+
+    The third direction is to add ornaments \cite{McBride2011}.  Here, we obtain systematic ways to enhance a type and/or its constructors with 
+    additional dependencies, as well as a lifting mechanism to lift proofs on a type to its ornamented type.  Combining this with constructor subtyping,
+    we should be able to present incremental development of languages and of their meta-theory, which would be closer to what is found in the literature.
+
+    \section{A refinement type system for Beluga}
+    
+    We start with refinements because it is the most invasive change to the language.  This is due to the fact that we now want to assign both sorts
+    and types to terms, which is done in a single judgment.  This change is also present at the level of types, which are classified by both classes
+    and kinds.  Thus, almost every inference rule must be adapted, although they keep the same flavor.  The core theory presented in this section is
+    based on \cite{Pientka2008} and \cite{PientkaDunfield2008}, and the addition of refinements closely follows what is shown in \cite{LovasPfenning2010}.
+
+    \subsection{Data-level}
+    The data-level of Beluga includes the usual terms, types, and kinds, but also contexts and substitutions.  We add to the type level a notion of sorts,
+    and to the kind level a similar notion of classes.  Contexts are classified using a notion of schema, which, in our extension, are built out of
+    world declarations.  A world is a record of assumptions satisfying certain properties.  In order to ensure well-formedness of worlds and schemata,
+    we introduce an additional base kind \texttt{Rec} for records.  
+
+    \textbf{Note}. It may be necessary to add a corresponding sort \texttt{RecSort} to characterize refinement records.  This would also allow a
+    subsorting mechanism on records, which could simplify the sub-worlds and sub-schema relationships.  
+
+    \subsubsection{Syntax}
+    The updated syntax of the language is given in Figure \ref{fig:SyntaxData}.  Most of the syntax that was already present in Beluga remains 
+    unchanged (kinds, types, terms, and substitution, to be precise).  The main differences are in the contexts and signatures, where assumptions
+    are endowed with a sort as well as a type.  Most importantly, LF contexts have an additional construct to associate variables to a given world,
+    instead of just a type.  Finally, declarations are extended with subsorting and worlds.    
+
+    \begin{figure}[tbp]
+        \centering
+        \begin{tabular}{rrl}
+            Signatures              & $ \Sigma ::= $  & $ \cdot \mid \Sigma, D $ \\
+%
+            Declarations            & $ D ::= $       & $ \textbf{s} \sqsubset \textbf{a} {:} L \sqsubset K \mid \textbf{c} {::} S \sqsubset A 
+                                                          \mid \textbf{s}_1 \leq \textbf{s}_2 \sqsubset \textbf{a} \mid \textbf{w} {:} W 
+                                                          \mid \boldsymbol{\xi} {:} \Xi $ \\
+%
+            Meta-contexts           & $ \Delta ::= $  & $ \cdot \mid \Delta, u{::}S[\Psi] \sqsubset A[\Psi] 
+                                                          \mid \Delta, p{::}S[\Psi] \sqsubset A[\Psi] \mid \Delta, s{:} \Psi_1[\Psi_2] $  \\
+%
+            Schema contexts         & $ \Omega ::= $  & $ \cdot \mid \Omega, \psi  {:} \Xi $ \\
+                                    &                 & \\
+            Kinds                   & $ K ::= $       & $ \Type \mid \Rec \mid \Pi x{:}A.K$ \\
+            Classes                 & $ L ::= $       & $ \Sort \mid \Pi x{::}S \sqsubset A. L \mid \top \mid L_1 \land L_2 $ \\
+                                    &                 &  \\
+            Atomic type families    & $ P ::= $       & $ \textbf{a} \mid P \ \vec{M} $ \\
+            Canonical type families & $ A ::= $       & $ P \mid \Pi x{:}A_1.A_2 $ \\
+            %
+            Atomic sort families    & $ Q ::= $       & $ \textbf{s} \mid Q \ \vec{M} $ \\
+            Canonical sort families & $ S ::= $       & $ Q \mid \Pi x{:}S_1 \sqsubset A_1.S_2 \mid \top \mid S_1 \land S_2 $ \\
+                                    &                 & \\
+            Worlds                  & $ W ::= $       & $ \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \mid \Pi x{::}S \sqsubset A. W $ \\
+            Schema                  & $ \Xi ::= $     & $ \varepsilon \mid \Xi + W $ \\
+                                    &                 & \\
+            Heads                   & $ H ::= $       & $ \textbf{c} \mid x \mid \proj \ k \ x \mid \Clo(x, s[\sigma]) \mid \#p[\sigma] \mid \proj \ k \ \#p $ \\
+            Spines                  & $ \vec{M} ::= $ & $ \varepsilon \mid N ; \vec{M} $ \\
+            Normal terms            & $ N ::= $       & $ R \mid \lambda x.N $\\
+            Neutral terms           & $ R ::= $       & $ H \ \vec{M} \mid u[\sigma] $\\
+                                    &                 & \\
+            LF contexts             & $ \Psi ::= $    & $ \cdot \mid \Psi, x{::}S \sqsubset A \mid \Psi, x{:} (W \vec{M}) $ \\
+            Substitutions           & $ \sigma ::= $  & $ \cdot \mid \wk_\psi \mid s[\sigma] \mid \sigma ; N $
+        \end{tabular}
+        \caption{Syntax of data-level}
+        \label{fig:SyntaxData}
+    \end{figure}
+
+    \subsubsection{Judgments}
+    As previously mentionned, most of the judgments take a slightly different form in the presence of refinements.  Let's first look at a 
+    quick summary of the judgments :
+
+    \begin{tabular}{ll}
+        $ \vdash \Sigma \ \sig $                                       & Signature well-formedness \\
+        $ \vdash_\Sigma \Omega \ \sctx$                                 & Schema context well-formedness \\
+        $ \Omega \vdash_\Sigma \Delta \ \mctx $                         & Meta-context well-formedness \\
+        $ \Omega; \Delta \vdash_\Sigma \Psi \ \ctx $                    & LF context well-formedness \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma L \sqsubset K $            & Class $L$ refines kind $K$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L $     & Atomic sort $Q$ synthesizes atomic type $P$ and class $L$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma S \sqsubset A \Lar \Sort $ & Sort $S$ refines type $A$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma N \Lar S \sqsubset A $     & Normal term $N$ checks against sort $S$ refining type $A$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma R \Rar S \sqsubset A $     & Neutral term $R$ synthesizes sort $S$ refining type $A$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma \sigma \Lar \Phi $         & Substitution $\sigma$ checks against LF context $\Phi$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A $ & $S_1$ is a sub-sort of $S_2$ as refinements of $A$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma W \ \world $               & $W$ is a well-formed world \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi \ \schema $            & $\Xi$ is a well-formed context schema \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma \Psi : \Xi $               & LF context $\Psi$ has schema $\Xi$ \\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2 $             & $W_1$ is a sub-world of $W_2$\\
+        $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2 $         & $\Xi_1$ is a sub-schema of $\Xi_2$
+    \end{tabular}
+    
+    \subsection{Computation-level}
+    We can lift the data-level refinements to the computation-level to obtain a restricted notion of refinements where the user does not directly
+    specify any sorts.  It could be interesting to have a full blown refinement type system, and it should not complicate matters too much.
+
+    \section{Constructor subtyping}
+    TBD
+
+    \section{Ornaments}
+    TBD
+
+    \bibliographystyle{acm}
+    \bibliography{bibliography}    
+\end{document}
