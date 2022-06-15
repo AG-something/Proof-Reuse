@@ -3,5 +3,7 @@
 \BOOKMARK [3][-]{subsubsection.1.1.1}{Syntax}{subsection.1.1}% 3
 \BOOKMARK [3][-]{subsubsection.1.1.2}{Judgments}{subsection.1.1}% 4
 \BOOKMARK [2][-]{subsection.1.2}{Computation-level}{section.1}% 5
-\BOOKMARK [1][-]{section.2}{Constructor subtyping}{}% 6
-\BOOKMARK [1][-]{section.3}{Ornaments}{}% 7
+\BOOKMARK [3][-]{subsubsection.1.2.1}{Syntax}{subsection.1.2}% 6
+\BOOKMARK [3][-]{subsubsection.1.2.2}{Judgments}{subsection.1.2}% 7
+\BOOKMARK [1][-]{section.2}{Constructor subtyping}{}% 8
+\BOOKMARK [1][-]{section.3}{Ornaments}{}% 9

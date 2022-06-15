@@ -51,6 +51,7 @@
 % Symbols
 \newcommand{\Rar}{\Rightarrow}
 \newcommand{\Lar}{\Leftarrow}
+\newcommand{\rar}{\rightarrow}
 
 
 %% keywords
@@ -62,6 +63,14 @@
 \newcommand{\proj}{\texttt{proj}}
 \newcommand{\Clo}{\texttt{Clo}}
 
+\newcommand{\ctype}{\texttt{ctype}}
+\newcommand{\csort}{\texttt{csort}}
+\newcommand{\rec}{\texttt{rec}}
+\newcommand{\fn}{\texttt{fn}}
+\newcommand{\case}{\texttt{case}}
+\newcommand{\of}{\texttt{of}}
+\newcommand{\bbox}{\texttt{box}}
+
 % Judgments
 \newcommand{\world}{\texttt{world}}
 \newcommand{\schema}{\texttt{schema}}
@@ -70,6 +79,8 @@
 \newcommand{\sctx}{\texttt{sctx}}
 \newcommand{\sig}{\texttt{sig}}
 \newcommand{\kind}{\texttt{kind}}
+
+\newcommand{\cctx}{\texttt{cctx}}
 
 \title{Proof Reuse}
 \date{\today}
@@ -119,17 +130,24 @@
     and kinds.  Thus, almost every inference rule must be adapted, although they keep the same flavor.  The core theory presented in this section is
     based on \cite{Pientka2008} and \cite{PientkaDunfield2008}, and the addition of refinements closely follows what is shown in \cite{LovasPfenning2010}.
 
+    In the setting of refinements, every object should have a unique type (fully determined by its syntax), but possibly many different sorts.  Each 
+    sort is restricted to a given type, and they express more specific properties that may of may not be satisfied by a given term of that type.  In 
+    this sense, one may regard types as intrinsic properties, and sorts as extrinsic properties \cite{Pfenning2000}.  This allows us to specify properties
+    without the need for additional types, which in turns simplifies the statement of theorems and their proofs.  Additionally, there is a natural 
+    sub-sorting relation that is akin to logical implication, that is $S_1 \leq S_2 \sqsubset A$ if the property $S_1$ implies the property $S_2$ for
+    any term of type $A$.  In particular, if we have proven a result on terms of sort $S_2$, then we can reuse the proof on terms of sort $S_1$.
+
     \subsection{Data-level}
     The data-level of Beluga includes the usual terms, types, and kinds, but also contexts and substitutions.  We add to the type level a notion of sorts,
     and to the kind level a similar notion of classes.  Contexts are classified using a notion of schema, which, in our extension, are built out of
     world declarations.  A world is a record of assumptions satisfying certain properties.  In order to ensure well-formedness 
     of worlds and schemata, we introduce an additional base kind \texttt{Rec} for records.  
 
-    \textbf{Note}. It may be necessary to add a corresponding sort \texttt{RecSort} to characterize refinement records.  This would also allow a
+    \textbf{Note}. It may be necessary to add a corresponding sort \texttt{RecSort} to characterize refinements of records.  This would also allow a
     subsorting mechanism on records, which could simplify the sub-worlds and sub-schema relationships.  
 
     \subsubsection{Syntax}
-    \begin{figure}[tbp]
+    \begin{figure}[]
         \centering
         \begin{tabular}{rrl}
             Signatures              & $ \Sigma ::= $  & $ \cdot \mid \Sigma, D $ \\
@@ -172,6 +190,9 @@
     are endowed with a sort as well as a type.  Most importantly, LF contexts have an additional construct to associate variables to a given world,
     instead of just a type.  Finally, declarations are extended with subsorting and worlds.    
 
+    In the syntax for sorts (and similarly for classes), $\top$ corresponds to all terms of the corresponding types, and $S_1 \land S_2$ is an intersection
+    sort, so it classifies terms that can be classified by both $S_1$ and $S_2$.  
+
     In the syntax of worlds, records are denoted as $\langle \ell_i {::} S_i \sqsubset A_i \rangle_n$, where the subscript $n \geq 1$ indicates the 
     number of fields.  The $\Pi$'s in front of records can either be a parameter referred to by some of the fields, or assumptions needed to ensure
     the well-formedness of a given world.  Once we get to the sub-world judgment, we will see that using $\Pi$ is perhaps a bit misleading since the
@@ -198,10 +219,21 @@
         $ \Omega; \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A $ & $S_1$ is a sub-sort of $S_2$ as refinements of $A$ \\
         $ \Omega; \Delta; \Psi \vdash_\Sigma W \ \world $               & $W$ is a well-formed world \\
         $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi \ \schema $            & $\Xi$ is a well-formed context schema \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma \Psi : \Xi $               & LF context $\Psi$ has schema $\Xi$ \\
+        $ \Omega; \Delta; \Psi_1 \vdash_\Sigma \Psi_2 : \Xi $           & LF context $\Psi$ has schema $\Xi$ \\
         $ \Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2 $             & $W_1$ is a sub-world of $W_2$\\
         $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2 $         & $\Xi_1$ is a sub-schema of $\Xi_2$
     \end{tabular}
+
+    \textbf{Notes}. (1) There might be too many contexts in some of these judgments.  In particular, worlds and schemata should be closed, and the judgments
+    for their well-formedness will only be used in signature formation, which requires all contexts to be empty.
+    
+    (2) It may be better to consider only LF contexts that have a schema rather than having a judgment for well-formed contexts and well-schemaed contexts.
+    To achieve this, it would probably be necessary to enrich the notion of a context schema slightly.  In particular, we would need a schema that
+    specify a particular sort/type for the right-most element(s) of the context since that is frequently used in mechanization.  The intuition for this
+    comes from the fact that we usually don't consider terms that are not well-typed, or types that are not well-kinded, so it is odd to consider
+    contexts that are not well-schemaed.  On the other hand, since contexts can have multiple schemata, we may want to consider the classifier 
+    $\texttt{ctx}$ as analogous to types and schemata as analogous to sorts.  In this case, we could have a $\top$ schema to talk about arbitrary contexts,
+    and merge the two judgments, just like we do for sorting/typing.
 
     Before presenting the rules defining each of these judgments, let us go over some conventions that will simplify notation.
     
@@ -661,6 +693,87 @@
     \subsection{Computation-level}
     We can lift the data-level refinements to the computation-level to obtain a restricted notion of refinements where the user does not directly
     specify any sorts.  It could be interesting to have a full blown refinement type system, and it should not complicate matters too much.
+
+    \subsubsection{Syntax}
+    \begin{figure}[]
+      \centering
+      \begin{tabular}{rrl}
+        Contexts                & $\Gamma ::=$ & $\cdot \mid \Gamma, y{::}\mu \sqsubset \kappa$ \\
+                                &              & \\
+        Kinds                   & $\kappa ::=$ & $\ctype \mid \Pi x{:}A.\kappa$ \\
+        Classes                 & $\zeta ::=$  & $\csort \mid \Pi x{::}S \sqsubset A. \zeta \mid \top \mid \zeta_1 \land \zeta_2$ \\
+                                &              & \\
+        Types                   & $\tau ::=$   & $A[\Psi] \mid \tau_1 \rar \tau_2 \mid \Pi \psi{:}\Xi. \tau \mid \Pi^\square u{:}A[\Psi]. \tau$ \\
+        Sorts                   & $\mu ::=$    & $S[\Psi] \mid \mu_1 \rar \mu_2 \mid \Pi \psi{:}\Xi.\mu \mid \Pi^\square u{::}S[\Psi] \sqsubset A[\Psi].\mu 
+                                                  \mid \top \mid \mu_1 \land \mu_2$ \\
+                                &              & \\
+        Checked expressions     & $e ::=$      & $i \mid \rec \ f.e \mid \fn \ y.e \mid \Lambda \psi. e \mid \lambda^\square u.e 
+                                                  \mid \bbox(\Psi.M) \mid \case \ i \ \of \ bs$ \\
+        Synthesized expressions & $i ::=$      & $y \mid i \ e \mid i \ \lceil \Psi \rceil \mid i \ \lceil \Psi. N \rceil \mid ( e{::} \mu \sqsubset \tau)$ \\
+        Branch                  & $b ::=$      & $\Pi \Delta. \bbox(\Psi.M) {::} S[\Psi] \sqsubset A[\Psi] \mapsto e$ \\
+        Branches                & $bs ::=$     & $\cdot \mid (b \mid bs)$
+      \end{tabular}
+      \caption{Syntax of computation level}
+      \label{fig:SyntaxComp}
+    \end{figure}
+
+    The syntax for the computation level is given in Figure \ref{fig:SyntaxComp}.  Again, it is essentially the same as what is already in Beluga, except
+    that we have sorts and classes.  However, in this case, we consider a restricted version that is fully induced by the refinements (and schemata) of
+    the data level.
+
+    \textbf{Notes}. (1) In practice, we allow user-defined computation-level type families, but they are not present in the current formulation.  To add
+    them, we would need to extend the syntax for types and have addition declarations.  In this case, it wouldn't be much more work to add user-defined
+    sorts.
+
+    (2) For sorts, we may want to consider $\Pi^\square u{::}S[\Psi_1] \sqsubset A[\Psi_2]. \mu$ instead of having both LF contexts be identical, probably
+    with the condition that $\Psi_1$ is contained in $\Psi_2$ (up to renaming).  In particular, we could have $\Psi_1 {:} \Xi_1$ and $\Psi_2 {:} \Xi_2$,
+    where $\Xi_1 \leq \Xi_2$.
+
+    \subsubsection{Judgments}
+    We have the follow computation level judgments :
+
+    \begin{tabular}{ll}
+      $\Omega; \Delta \vdash_\Sigma \Gamma \ \cctx$                                         & $\Gamma$ is a well-formed context \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa$                       & Class $\zeta$ refines kind $\kappa$ \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort$               & Sort $\mu$ refines type $\tau$ \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau$                    & Expression $e$ checks agains sort $\mu$ refining type $\tau$ \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau$                    & Expression $i$ synthesizes saor $\mu$ refining type $\tau$ \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau$ & Branch $b$ checks against $\mu$ refining $\tau$ 
+                                                                                           when analyzing a $\mu'$ refining $\tau'$ \\
+      $\Omega; \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau$              & $\mu_1$ is a subsort of $\mu_2$ 
+    \end{tabular}
+
+    Again, we omit the subscript $\Sigma$ since it is fixed throughout any derivation, and we assume that all inputs are well-formed.  The system should
+    be decidable if we follow the same input/output convention as in the data level (i.e. the synthesized sorts and types are outputs, and everything else
+    is an input).  The judgments are defined via the following rules :
+
+    \textbf{Notes.} (1) Just as in the data-level, it may be necessary to have judgments for kind and type well-formedness.
+
+    (2) Since we are just lifting everything to the computation level, it may be redundant to have $\top$ and intersection computation-level sorts (and 
+    classes) since they could probably always be inferred from $\top$ and intersection data-level sorts (and classes).
+
+    % Context well-formedness
+    $\boxed{\Omega; \Delta \vdash_\Sigma \Gamma \ \cctx}$
+    
+    
+
+    % Class refining kinds
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa}$
+
+    % Sorts refining types
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort}$
+
+    % Expression sort/type-checking
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau}$
+
+    % Expression sort/type synthesis
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
+
+    % Branch sorting/typing
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau}$
+
+    % Subsorting
+    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau}$
 
     \section{Constructor subtyping}
     TBD

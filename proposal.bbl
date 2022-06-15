@@ -28,6 +28,10 @@
 \newblock Contextual modal type theory.
 \newblock {\em {ACM} Trans. Comput. Log. 9}, 3 (2008), 23:1--23:49.
 
+\bibitem{Pfenning2000}
+{\sc Pfenning, F.}
+\newblock {Church and Curry: Combining Intrinsic and Extrinsic Typing}, 6 2000.
+
 \bibitem{Pientka2008}
 {\sc Pientka, B.}
 \newblock A type-theoretic foundation for programming with higher-order
