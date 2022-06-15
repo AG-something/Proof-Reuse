@@ -18,6 +18,8 @@
 \DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{n} %mathpzc alphabet
 \usepackage[mathscr]{eucal} %mathscr alphabet
 
+\usepackage{stmaryrd} %Bold brackets (for meta-substitutions)
+
 %Redefine theorem environments
 \usepackage[amsmath,  thref,  thmmarks,  hyperref]{ntheorem}
 
@@ -729,6 +731,8 @@
     with the condition that $\Psi_1$ is contained in $\Psi_2$ (up to renaming).  In particular, we could have $\Psi_1 {:} \Xi_1$ and $\Psi_2 {:} \Xi_2$,
     where $\Xi_1 \leq \Xi_2$.
 
+    (3) It may be better to have $\Pi x{:}A[\Psi].\kappa$ kinds, and similarly for classes.
+
     \subsubsection{Judgments}
     We have the follow computation level judgments :
 
@@ -752,28 +756,219 @@
     (2) Since we are just lifting everything to the computation level, it may be redundant to have $\top$ and intersection computation-level sorts (and 
     classes) since they could probably always be inferred from $\top$ and intersection data-level sorts (and classes).
 
+    (3) Every time we use $\Pi$-sorts, we have the overlying $\Pi$-type, so we can probably remove the domain type from the sort.  For instance, we would 
+    have $\Pi^\square u{::}S[\Psi]. \mu$ instead of $\Pi^\square u{::}S[\Psi] \sqsubset A[\Psi]. \mu$.  This also applies at the data level.
+
     % Context well-formedness
     $\boxed{\Omega; \Delta \vdash_\Sigma \Gamma \ \cctx}$
     
-    
+    \begin{align*}
+      & \infer{\Omega; \Delta \vdash \cdot \ \cctx}{} &
+      & \infer{\Omega; \Delta \vdash \Gamma, y{::}\mu \sqsubset \tau \ \cctx}
+        {
+          \Omega; \Delta \vdash \Gamma \ \cctx
+          &&
+          \Omega; \Delta; \Gamma \vdash \mu \sqsubset \tau \Lar \tau
+        }
+    \end{align*}
 
     % Class refining kinds
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa}$
+    
+    \begin{align*}
+      & \infer{\Omega; \Delta; \Gamma \vdash \csort \sqsubset \ctype}{} &
+      & \infer{\Omega; \Delta; \Gamma \vdash \top \sqsubset \kappa}{}
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \Pi y{::}S[\Psi] \sqsubset A[\Psi]. \zeta \sqsubset \Pi y{:}A[\Psi]. \kappa}
+            {
+              \Omega; \Delta; \Psi \vdash S \sqsubset A
+              &&
+              \Omega; \Delta; \Gamma, y{::}S[\Psi] \sqsubset A[\Psi] \vdash \zeta \sqsubset \kappa
+            }
+    \end{align*}    
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \zeta_1 \land \zeta_2 \sqsubset \kappa}
+            {
+              \Omega; \Delta; \Gamma \vdash \zeta_1 \sqsubset \kappa
+              &&
+              \Omega; \Delta; \Gamma \vdash \zeta_2 \sqsubset \kappa
+            }
+    \end{align*}
+
+    \textbf{Note}.  For the $\Pi$ rule, it indeed seems better to have the boxed LF contexts since we establish $S \sqsubset A$ at the data-level.
 
     % Sorts refining types
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort}$
 
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi] \Lar \csort}
+            {\Omega; \Delta; \Psi \vdash S \sqsubset A \Lar \Sort}
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2 \Lar \csort}
+            {
+              \Omega; \Delta; \Gamma \vdash \mu_1 \sqsubset \tau_1 \Lar \csort
+              &&
+              \Omega; \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash \mu_2 \sqsubset \tau_2 \Lar \csort
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \Pi^\square u{::} S[\Psi] \sqsubset A[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau \Lar \csort}
+            {
+              \Omega; \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+              &&
+              \Omega; \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu \sqsubset \tau \Lar \csort
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash\Pi \psi{:}\Xi_1 . \mu \sqsubset \Pi \psi{:}\Xi_2 . \tau \Lar \csort}
+            {
+              \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+              &&
+              \Omega, \psi{:}\Xi_1; \Delta; \Gamma \vdash \mu \sqsubset \tau
+            }
+    \end{align*}
+
+    \textbf{Notes}. (1) Missing rules for $\top$ and intersection sorts.
+
+    (2) It is not really necessary to mention $\csort$ everywhere in this judgment if we never check against other classes (although it's
+    more likely that the other sorts are missing).
+
     % Expression sort/type-checking
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau}$
 
+    \begin{align*}
+      & \infer{\Omega; \Delta; \Gamma \vdash i \Lar \mu' \sqsubset \tau}
+        {
+          \Omega; \Delta; \Gamma \vdash i \Rar \mu \sqsubset \tau
+          &&
+          \Omega; \Delta; \Gamma \vdash \mu \leq \mu' \sqsubset \tau
+        } &
+      & \infer{\Omega; \Delta; \Gamma \vdash \bbox(\Psi. M) \Lar S[\Psi] \sqsubset A[\Psi]}
+        {
+          \Omega; \Delta; \Psi \vdash M \Lar S \sqsubset A
+        }
+    \end{align*}
+    \begin{align*}
+      & \infer{\Omega; \Delta; \Gamma \vdash \rec \ f.e \Lar \mu \sqsubset \tau}
+        {
+          \Omega; \Delta; \Gamma, f{::}\mu \sqsubset \tau \vdash e \Lar \mu \sqsubset \tau
+        } &
+      & \infer{\Omega; \Delta; \Gamma \vdash \fn \ y.e \Lar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2}
+        {
+          \Omega; \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash e \Lar \mu_2 \sqsubset \tau_2
+        }
+    \end{align*}
+    \begin{align*}
+      & \infer{\Omega; \Delta; \Gamma \vdash \lambda^\square u.e \Lar \Pi^\square u{::}S[\Psi] \sqsubset A[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau}
+        {
+          \Omega; \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash e \Lar \mu \sqsubset \tau
+        }
+      & \infer{\Omega; \Delta; \Gamma \vdash \Lambda \psi. e \Lar \Pi \psi{:}\Xi.\mu \sqsubset \Pi \psi {:} \Xi. \tau}
+        {
+          \Omega, \psi{:}\Xi; \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau
+        }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \case \ i \ \of \ b_1 \mid ... \mid b_n \Lar \mu \sqsubset \tau}
+            {
+              \Omega; \Delta; \Gamma \vdash i \Rar A[\Psi]
+              &&
+              \text{for all } k \ \Omega; \Delta; \Gamma \vdash b_k \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau
+            }
+    \end{align*}
+
     % Expression sort/type synthesis
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
+    
+    \begin{align*}
+      & \infer{\Omega; \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau}
+        {
+          \Omega; \Delta; \Gamma \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau
+        } &
+      & \infer{\Omega; \Delta; \Gamma \vdash y \Rar \mu \sqsubset \tau}{y{::}\mu \sqsubset \tau \in \Gamma}
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash i \ e \Rar \mu_2 \sqsubset \tau_2}
+            {
+              \Omega; \Delta; \Gamma \vdash i \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2
+              &&
+              \Omega; \Delta; \Gamma \vdash e \Lar \mu_1 \sqsubset \tau_1
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash i \ \lceil \Psi \rceil \Rar \llbracket \Psi/\psi \rrbracket (\mu \sqsubset \tau)}
+            {
+              \Omega; \Delta; \Gamma \vdash i \Rar \Pi \psi{:}\Xi_1. \mu \sqsubset \Pi \psi{:}\Xi_2. \tau
+              &&
+              \Omega; \Delta; \Gamma \vdash \Psi : \Xi_1
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash i \ \lceil \Psi. M \rceil \Rar \rrbracket \Psi. M / u \rrbracket (\mu \sqsubset \tau)}
+            {
+              \Omega; \Delta; \Gamma \vdash i \Rar \Pi^\square u{::}S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau
+              &&
+              \Omega; \Delta; \Psi \vdash M \Lar S \sqsubset A
+            }
+    \end{align*}
 
     % Branch sorting/typing
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau}$
 
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \Pi \Delta_k . \bbox(\Psi. M_k) : S_k[\Psi_k]  \sqsubset A_k[\Psi_k] \mapsto e_k 
+                                                \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau}
+            {
+              \Omega; \Delta; \Gamma \vdash M_k \Lar S_k \sqsubset A_k
+              &&
+              \begin{array}{ll}
+                \Omega; \Delta, \Delta_k & \vdash \Psi \doteq \Psi_k / (\theta_1, \Delta') \\
+                \Omega; \Delta'          & \vdash \llbracket \theta_1 \rrbracket ( S \sqsubset A) \doteq 
+                                                  \llbracket \theta_1 \rrbracket(S_k \sqsubset A_k)/(\theta_2, \Delta'') \\
+                \Omega; \Delta'';\llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket \Gamma & \vdash
+                                        \llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket e_k 
+                                        \Lar \llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket (\mu \sqsubset \tau)
+              \end{array}
+            }
+    \end{align*}
+
     % Subsorting
     $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau}$
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi]}
+            {
+              \Omega; \Delta; \Psi \vdash S \sqsubset A
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash\mu_1 \rar \mu_1' \leq \mu_2 \rar \mu_2' \sqsubset \tau \rar \tau'}
+            {
+              \Omega; \Delta; \Gamma \vdash \mu_2 \leq \mu_1 \sqsubset \tau
+              &&
+              \Omega; \Delta; \Gamma, y{::} \mu_2 \sqsubset \tau \vdash \mu_1' \leq \mu_2' \sqsubset \tau'
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash\Pi^\square u{::}S_1[\Psi] \sqsubset A[\Psi]. \mu_1 
+                                             \leq \Pi^\square u{::}S_2[\Psi] \sqsubset A[\Psi]. \mu_2 \sqsubset \Pi^\square u{:} A[\Psi]. \tau}
+            {
+              \Omega; \Delta; \Psi \vdash S_2 \leq S_1 \sqsubset A
+              &&
+              \Omega; \Delta, u{::} S_2[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
+            }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta; \Gamma \vdash \Pi \psi{:}\Xi_1. \mu_1 \leq \psi{:}\Xi_2. \mu_2 \sqsubset \Pi \psi{:}\Xi. \tau}
+            {
+              \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+              &&
+              \Omega; \Delta \vdash \Xi_2 \leq \Xi
+              &&
+              \Omega, \psi{:}\Xi_1; \Delta, \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
+            }
+    \end{align*}
 
     \section{Constructor subtyping}
     TBD
