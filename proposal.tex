@@ -578,19 +578,85 @@
     \end{align*}
 
     % World well-formedness
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W \world}$
+    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W \ \world}$
+    
+    \begin{align*}
+      \infer{\Delta; \Psi \vdash \Pi \overrightarrow{x{::}S \sqsubset A}.\langle \ell_i {::} S_i \sqsubset B_i \rangle_n}
+            {
+              \Delta; \Psi \vdash \overrightarrow{ S \sqsubset A} \Lar \Sort
+              &&
+              \Delta; \Psi \vdash, (\overrightarrow{x{::}S \sqsubset A}) \vdash \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \Lar \Rec
+            }
+    \end{align*}
+
+    \textbf{Notes}. (1) The judgment for \texttt{Rec} kinds is still not defined.
+    
+    (2) There's also a possible alternative set of rules where we add the parameters one at a time, although it requires separated the syntactic
+    category of worlds in two parts, one for records and one for parametrized records.  It also requires two corresponding notions of sub-worlds.
+    So, it's a bit more verbose, but it's a lot more straightforward.
 
     % Schema well-formedness
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi \schema}$
+    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi \ \schema}$
+
+    \begin{align*}
+      & \infer{\Delta; \Psi \vdash \varepsilon \ \schema}{} &
+      & \infer{\Delta; \Psi \vdash \Xi + \textbf{w} \ \schema}
+        {
+          \Delta; \Psi \vdash \Xi \ \schema
+          &&
+          \textbf{w} {:} W \in \Sigma
+          &&
+          \textbf{w} \notin \Xi
+        }
+    \end{align*}
+    
+    \textbf{Note}.  The judgments for world and schema validity and only used in signature formations, which requires the contexts to be empty.
+    So, they may not be needed at all in this case.
 
     % Schemaing of LF contexts
-    $\boxed{\Omega; \Delta; \Psi_1 \vdash_\Sigma \Psi_2 : \Xi}$
+    $\boxed{\Omega; \Delta \vdash_\Sigma \Psi : \Xi}$
+    
+    \begin{align*}
+      & \infer{\Omega; \Delta \vdash \cdot {:} \varepsilon}{} &
+      & \infer{\Omega; \Delta \vdash \psi {:} \Xi}{\psi {:} \Xi \in \Omega} &
+      & \infer{\Omega; \Delta \vdash \Psi {:} \Xi_2}
+        {
+          \Omega; \Delta \vdash \Psi {:} \Xi_1
+          &&
+          \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+        }
+    \end{align*}
+    \begin{align*}
+      \infer{\Omega; \Delta \vdash (\Psi, x{:} \textbf{w} \ \vec{M}) : \Xi}
+            {
+              \Omega; \Delta \vdash \Psi : \Xi
+              &&
+              \textbf{w} {:} \Pi \overrightarrow{x{::}S \sqsubset A}. \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \in \Xi
+              &&
+              \Omega ; \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}
+            }
+    \end{align*}
+
+    \textbf{Note}. The judgment $\Omega; \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}$ is just checking each of the terms in the 
+    spine $\vec{M}$ against the corresponding type (which may depend on the previous terms).  Rules will be added soon.
 
     % Sub-worlds
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$
+    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$ \\
+    
+    \textbf{Note}.  This will be way easier with the aforementionned change on the syntax of worlds.\\
 
     % Sub-schema
     $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2}$
+    \begin{align*}
+      & \infer{\Delta; \Psi \vdash \varepsilon \leq \Xi}{\Delta; \Psi \vdash \Xi \ \schema} &
+      & \infer{\Delta; \Psi \vdash \Xi_1 + W_1 \leq \Xi_2 + W_2}
+        {
+          \Delta; \Psi \vdash \Xi_1 \leq \Xi_2
+          &&
+          \Delta; \Psi \vdash W_1 \leq W_2
+        } &
+      & \infer{\Delta; \Psi \vdash \Xi_1 + \Xi_2 \leq \Xi_2 + \Xi_1}{\Delta; \Psi \vdash \Xi_1 + \Xi_2 \ \schema}
+    \end{align*}
 
     \subsection{Computation-level}
     We can lift the data-level refinements to the computation-level to obtain a restricted notion of refinements where the user does not directly
