@@ -1,4 +1,5 @@
 \documentclass[letterpaper, 11pt]{article}
+
 \usepackage{amsmath, amssymb, amsfonts}%math
 \usepackage{mathtools}
 \usepackage[left=2cm,right=2cm,top=2.75cm,bottom=2.75cm]{geometry}%margins
@@ -49,6 +50,7 @@
 \usepackage{verbments}%fancy verbatim
 \usepackage[shortlabels]{enumitem}
 
+\newcommand{\mlcomment}[1]{} % multi-line comments (not great since it still processes the argument)
 
 % Symbols
 \newcommand{\Rar}{\Rightarrow}
@@ -74,6 +76,7 @@
 \newcommand{\bbox}{\texttt{box}}
 
 % Judgments
+\newcommand{\block}{\texttt{block}}
 \newcommand{\world}{\texttt{world}}
 \newcommand{\schema}{\texttt{schema}}
 \newcommand{\ctx}{\texttt{ctx}}
@@ -91,7 +94,8 @@
 
 \begin{document}
     \maketitle
-    
+
+    % First paragraph is very bad, need an actual sujet amene
     It is common in the literature to reuse proofs of previously established results in order to derive new theorems.  A common pattern in papers
     is to start from a well understood language (often System F, LF, or the Calculus of Construction), add a new construct to it (e.g. subtyping,
     inductive types, etc.), and then show that the desirable properties of the original system are preserved.  Most proofs (at least for the basic
@@ -115,8 +119,11 @@
     
     The second direction is to add constructor subtyping \cite{Poll1997, BarthesFrade1999}, which would be more accurately called \textit{supertyping}.
     This idea is simple : if a type $B$ has all the constuctors of another type $A$ and possibly more, then $B$ can be viewed as a supertype of $A$.
-    In this setting, we get a notion of co-inheritance, similar to the inheritance mechanism found in object oriented programming.
-
+    Intuitively, this is because any object constructed with only the constructors defining $A$ could also be constructed by the constructors defining $B$.
+    In this setting, we get a notion of co-inheritance \cite{Poll1997}.  This can be seen as dual to the inheritance mechanisms of object oriented programming,
+    in the sense that a co-inherited function is lifted from a subtype to its supertype, and then extended with the cases to cover the extra constructors (if needed).
+    
+    % Might ditch ornaments for now, it's kind of complicated and mysterious
     The third direction is to add ornaments \cite{McBride2011}.  Here, we obtain systematic ways to enhance a type and/or its constructors with 
     additional dependencies, as well as a lifting mechanism to lift proofs on a type to its ornamented type.  Combining this with constructor subtyping,
     we should be able to present incremental development of languages and of their meta-theory, which would be closer to what is found in the literature.
@@ -158,21 +165,23 @@
                                                           \mid \textbf{s}_1 \leq \textbf{s}_2 \sqsubset \textbf{a} \mid \textbf{w} {:} W 
                                                           \mid \boldsymbol{\xi} {:} \Xi $ \\
 %
-            Meta-contexts           & $ \Delta ::= $  & $ \cdot \mid \Delta, u{::}S[\Psi] \sqsubset A[\Psi] 
-                                                          \mid \Delta, p{::}S[\Psi] \sqsubset A[\Psi] \mid \Delta, s{:} \Psi_1[\Psi_2] $  \\
+            Meta-contexts           & $ \Delta ::= $  & $ \cdot \mid \Delta, u{::}S[\Psi] \sqsubset A[\Psi] \mid \Delta, p{::}S[\Psi] \sqsubset A[\Psi]
+                                                          \mid \Delta, s{:} \Psi_1[\Psi_2] \mid \Delta, \psi {:} \Xi$  \\
 %
-            Schema contexts         & $ \Omega ::= $  & $ \cdot \mid \Omega, \psi  {:} \Xi $ \\
+%            Schema contexts         & $ \Omega ::= $  & $ \cdot \mid \Omega, \psi  {:} \Xi $ \\
                                     &                 & \\
             Kinds                   & $ K ::= $       & $ \Type \mid \Rec \mid \Pi x{:}A.K$ \\
             Classes                 & $ L ::= $       & $ \Sort \mid \Pi x{::}S \sqsubset A. L \mid \top \mid L_1 \land L_2 $ \\
                                     &                 &  \\
-            Atomic type families    & $ P ::= $       & $ \textbf{a} \mid P \ \vec{M} $ \\
+            Atomic type families    & $ P ::= $       & $ \textbf{a} \mid P \ N $ \\
             Canonical type families & $ A ::= $       & $ P \mid \Pi x{:}A_1.A_2 $ \\
             %
-            Atomic sort families    & $ Q ::= $       & $ \textbf{s} \mid Q \ \vec{M} $ \\
+            Atomic sort families    & $ Q ::= $       & $ \textbf{s} \mid Q \ N $ \\
             Canonical sort families & $ S ::= $       & $ Q \mid \Pi x{:}S_1 \sqsubset A_1.S_2 \mid \top \mid S_1 \land S_2 $ \\
                                     &                 & \\
-            Worlds                  & $ W ::= $       & $ \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \mid \Pi x{::}S \sqsubset A. W $ \\
+            Blocks                  & $ B ::= $       & $ S \sqsubset A \mid \Sigma x{::}S \sqsubset A. B$ \\
+            Worlds                  & $ W ::= $       & $ B \mid \Pi x{::}S \sqsubset A. W $ \\
+%            Worlds                  & $ W ::= $       & $ \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \mid \Pi x{::}S \sqsubset A. W $ \\
             Schema                  & $ \Xi ::= $     & $ \varepsilon \mid \Xi + W $ \\
                                     &                 & \\
             Heads                   & $ H ::= $       & $ \textbf{c} \mid x \mid \proj \ k \ x \mid \Clo(x, s[\sigma]) \mid \#p[\sigma] \mid \proj \ k \ \#p $ \\
@@ -302,6 +311,7 @@
     uniform system by using $\top$ refinements in place of just kinds or types, so I would prefer to keep this approach and just add rules for
     these cases.
 
+\mlcomment{
     % Schema context well-formedness
     $\boxed{\vdash_\Sigma \Omega \ \sctx}$
 
@@ -316,6 +326,7 @@
     \end{align*}
 
     \textbf{Remark}.  Maybe the names $\boldsymbol{\xi}$ are unnecessary in the signature.
+}
 
     % Meta-context well-formedness
     $\boxed{\Omega \vdash_\Sigma \Delta \ \mctx}$
@@ -386,6 +397,7 @@
       & \infer{\Delta ; \Psi \vdash \Pi x{::}S \sqsubset A.L \sqsubset \Pi x{:}A.K}
         {
           \Delta ; \Psi \vdash S \sqsubset A \Lar \Sort
+          &&
           \Delta ; \Psi, x {:} S \sqsubset A \vdash L \sqsubset K
         }
     \end{align*}
@@ -611,17 +623,44 @@
         }
     \end{align*}
 
-    % World well-formedness
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W \ \world}$
+    % Block well-formedness
+    $\boxed{\Delta; \Psi \vdash_\Sigma B \ \block}$
     
     \begin{align*}
-      \infer{\Delta; \Psi \vdash \Pi \overrightarrow{x{::}S \sqsubset A}.\langle \ell_i {::} S_i \sqsubset B_i \rangle_n}
-            {
-              \Delta; \Psi \vdash \overrightarrow{ S \sqsubset A} \Lar \Sort
-              &&
-              \Delta; \Psi \vdash, (\overrightarrow{x{::}S \sqsubset A}) \vdash \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \Lar \Rec
-            }
+      & \infer{\Delta; \Psi \vdash (S \sqsubset A) \ \block}
+              {
+                \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+              } &
+      & \infer{\Delta; \Psi \vdash (\Sigma x{::}S \sqsubset A. B) \ \block}
+              {
+                \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+                &&
+                \Delta; \Psi, x{::} S \sqsubset A \vdash B \ \block
+              }
     \end{align*}
+    
+    % World well-formedness    
+    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W \ \world}$
+
+    \begin{align*}
+      & \infer{\Delta; \Psi \vdash B \ \world}{\Delta; \Psi \vdash B \ \block} &
+      & \infer{\Delta; \Psi \vdash (\Pi x{::}S \sqsubset A. W) \ \world}
+              {
+                \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+                &&
+                \Delta; \Psi, x{::} S \sqsubset A \vdash W \ \world
+              }
+    \end{align*}
+
+    
+%    \begin{align*}
+%      \infer{\Delta; \Psi \vdash \Pi \overrightarrow{x{::}S \sqsubset A}.\langle \ell_i {::} S_i \sqsubset B_i \rangle_n}
+%            {
+%              \Delta; \Psi \vdash \overrightarrow{ S \sqsubset A} \Lar \Sort
+%              &&
+%              \Delta; \Psi \vdash, (\overrightarrow{x{::}S \sqsubset A}) \vdash \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \Lar \Rec
+%            }
+%    \end{align*}
 
     \textbf{Notes}. (1) The judgment for \texttt{Rec} kinds is still not defined.
     
@@ -674,11 +713,56 @@
     \textbf{Note}. The judgment $\Omega; \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}$ is just checking each of the terms in the 
     spine $\vec{M}$ against the corresponding type (which may depend on the previous terms).  Rules will be added soon.
 
+    % Sub-blocks
+    $\boxed{\Delta; \Psi \vdash_\Sigma B_1 \leq B_2}$
+    \begin{align*}
+      & \infer{\Delta; \Psi \vdash (S_1 \sqsubset A) \leq (S_2 \sqsubset A)}
+              {
+                \Delta; \Psi \vdash S_1 \leq S_2 \sqsubset A
+              } &
+      & \infer{\Delta; \Psi \vdash \Sigma x{::}S \sqsubset A. B_1 \leq B_2}
+              {
+                \Delta ; \Psi \vdash B_1 \leq B_2
+                &&
+                \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+              }
+    \end{align*}
+    \begin{align*}
+      \infer{\Delta; \Psi \vdash (\Sigma x{::} S_1 \sqsubset A).B_1 \leq (\Sigma x{::}S_2 \sqsubset A). B_2 }
+            {
+              \Delta; \Psi \vdash S_1 \leq S_2 \sqsubset A
+              &&
+              \Delta; \Psi, x{::}S_1 \sqsubset A \vdash B_1 \leq B_2
+            }
+    \end{align*}
+
     % Sub-worlds
     $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$ \\
-    
-    \textbf{Note}.  This will be way easier with the aforementionned change on the syntax of worlds.\\
+    \begin{align*}
+      & \infer{\Delta; \Psi \vdash B_1 \leq B_2 \quad (\text{as worlds})}
+              {
+                \Delta; \Psi \vdash B_1 \leq B_2 \quad ( \text{as blocks})
+              } &
+      & \infer{\Delta; \Psi \vdash \Pi x{::}S \sqsubset A. W_1 \leq W_2}
+              {
+                \Delta ; \Psi \vdash W_1 \leq W_2
+                &&
+                \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+              }
+    \end{align*}
+    \begin{align*}
+      \infer{\Delta; \Psi \vdash (\Pi x{::} S_1 \sqsubset A).W_1 \leq (\Pi x{::}S_2 \sqsubset A). W_2 }
+            {
+              \Delta; \Psi \vdash S_1 \leq S_2 \sqsubset A
+              &&
+              \Delta; \Psi, x{::}S_1 \sqsubset A \vdash W_1 \leq W_2
+            }
+    \end{align*}
 
+    \textbf{Remark}.  We stress that the last rule for sub-worlds does not satisfy the usual contravariance associated to subtyping of $\Pi$-types, which
+    indicates that we may not want to consider $\Pi$-worlds as functions.  In addition, we also have this rule stating that having extra parameters yields
+    sub-worlds, which is also not the case when subtyping function spaces.
+    
     % Sub-schema
     $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2}$
     \begin{align*}
