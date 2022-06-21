@@ -149,11 +149,8 @@
     \subsection{Data-level}
     The data-level of Beluga includes the usual terms, types, and kinds, but also contexts and substitutions.  We add to the type level a notion of sorts,
     and to the kind level a similar notion of classes.  Contexts are classified using a notion of schema, which, in our extension, are built out of
-    world declarations.  A world is a record of assumptions satisfying certain properties.  In order to ensure well-formedness 
-    of worlds and schemata, we introduce an additional base kind \texttt{Rec} for records.  
-
-    \textbf{Note}. It may be necessary to add a corresponding sort \texttt{RecSort} to characterize refinements of records.  This would also allow a
-    subsorting mechanism on records, which could simplify the sub-worlds and sub-schema relationships.  
+    world declarations.  A world is a record of assumptions satisfying certain properties.  To ensure well-formedness of worlds, we use two syntactic
+    categories : blocks and worlds.  A block is a dependent record (i.e. $\Sigma$-type), and a world is a function space whose image is a block.
 
     \subsubsection{Syntax}
     \begin{figure}[]
@@ -161,7 +158,7 @@
         \begin{tabular}{rrl}
             Signatures              & $ \Sigma ::= $  & $ \cdot \mid \Sigma, D $ \\
 %
-            Declarations            & $ D ::= $       & $ \textbf{s} \sqsubset \textbf{a} {:} L \sqsubset K \mid \textbf{c} {::} S \sqsubset A 
+            Declarations            & $ D ::= $       & $ \textbf{s} {::}L \sqsubset \textbf{a} {:} K \mid \textbf{c} {::} S \sqsubset A 
                                                           \mid \textbf{s}_1 \leq \textbf{s}_2 \sqsubset \textbf{a} \mid \textbf{w} {:} W 
                                                           \mid \boldsymbol{\xi} {:} \Xi $ \\
 %
@@ -170,14 +167,14 @@
 %
 %            Schema contexts         & $ \Omega ::= $  & $ \cdot \mid \Omega, \psi  {:} \Xi $ \\
                                     &                 & \\
-            Kinds                   & $ K ::= $       & $ \Type \mid \Rec \mid \Pi x{:}A.K$ \\
-            Classes                 & $ L ::= $       & $ \Sort \mid \Pi x{::}S \sqsubset A. L \mid \top \mid L_1 \land L_2 $ \\
+            Kinds                   & $ K ::= $       & $ \Type \mid \Pi x{:}A.K$ \\
+            Classes                 & $ L ::= $       & $ \Sort \mid \Pi x{::}S. L \mid \top \mid L_1 \land L_2 $ \\
                                     &                 &  \\
             Atomic type families    & $ P ::= $       & $ \textbf{a} \mid P \ N $ \\
             Canonical type families & $ A ::= $       & $ P \mid \Pi x{:}A_1.A_2 $ \\
             %
             Atomic sort families    & $ Q ::= $       & $ \textbf{s} \mid Q \ N $ \\
-            Canonical sort families & $ S ::= $       & $ Q \mid \Pi x{:}S_1 \sqsubset A_1.S_2 \mid \top \mid S_1 \land S_2 $ \\
+            Canonical sort families & $ S ::= $       & $ Q \mid \Pi x{:}S_1 .S_2 \mid \top \mid S_1 \land S_2 $ \\
                                     &                 & \\
             Blocks                  & $ B ::= $       & $ S \sqsubset A \mid \Sigma x{::}S \sqsubset A. B$ \\
             Worlds                  & $ W ::= $       & $ B \mid \Pi x{::}S \sqsubset A. W $ \\
@@ -218,21 +215,21 @@
 
     \begin{tabular}{ll}
         $ \vdash \Sigma \ \sig $                                       & Signature well-formedness \\
-        $ \vdash_\Sigma \Omega \ \sctx$                                 & Schema context well-formedness \\
-        $ \Omega \vdash_\Sigma \Delta \ \mctx $                         & Meta-context well-formedness \\
-        $ \Omega; \Delta \vdash_\Sigma \Psi \ \ctx $                    & LF context well-formedness \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma L \sqsubset K $            & Class $L$ refines kind $K$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L $     & Atomic sort $Q$ synthesizes atomic type $P$ and class $L$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma S \sqsubset A \Lar \Sort $ & Sort $S$ refines type $A$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma N \Lar S \sqsubset A $     & Normal term $N$ checks against sort $S$ refining type $A$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma R \Rar S \sqsubset A $     & Neutral term $R$ synthesizes sort $S$ refining type $A$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma \sigma \Lar \Phi $         & Substitution $\sigma$ checks against LF context $\Phi$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A $ & $S_1$ is a sub-sort of $S_2$ as refinements of $A$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma W \ \world $               & $W$ is a well-formed world \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi \ \schema $            & $\Xi$ is a well-formed context schema \\
-        $ \Omega; \Delta; \Psi_1 \vdash_\Sigma \Psi_2 : \Xi $           & LF context $\Psi$ has schema $\Xi$ \\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2 $             & $W_1$ is a sub-world of $W_2$\\
-        $ \Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2 $         & $\Xi_1$ is a sub-schema of $\Xi_2$
+%        $ \vdash_\Sigma \Omega \ \sctx$                                 & Schema context well-formedness \\
+        $ \vdash_\Sigma \Delta \ \mctx $                         & Meta-context well-formedness \\
+        $  \Delta \vdash_\Sigma \Psi \ \ctx $                    & LF context well-formedness \\
+        $  \Delta; \Psi \vdash_\Sigma L \sqsubset K $            & Class $L$ refines kind $K$ \\
+        $  \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L $     & Atomic sort $Q$ synthesizes atomic type $P$ and class $L$ \\
+        $  \Delta; \Psi \vdash_\Sigma S \sqsubset A \Lar \Sort $ & Sort $S$ refines type $A$ \\
+        $  \Delta; \Psi \vdash_\Sigma N \Lar S \sqsubset A $     & Normal term $N$ checks against sort $S$ refining type $A$ \\
+        $  \Delta; \Psi \vdash_\Sigma R \Rar S \sqsubset A $     & Neutral term $R$ synthesizes sort $S$ refining type $A$ \\
+        $  \Delta; \Psi \vdash_\Sigma \sigma \Lar \Phi $         & Substitution $\sigma$ checks against LF context $\Phi$ \\
+        $  \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A $ & $S_1$ is a sub-sort of $S_2$ as refinements of $A$ \\
+        $  \Delta; \Psi \vdash_\Sigma W \ \world $               & $W$ is a well-formed world \\
+        $  \Delta; \Psi \vdash_\Sigma \Xi \ \schema $            & $\Xi$ is a well-formed context schema \\
+        $  \Delta; \Psi_1 \vdash_\Sigma \Psi_2 : \Xi $           & LF context $\Psi$ has schema $\Xi$ \\
+        $  \Delta; \Psi \vdash_\Sigma W_1 \leq W_2 $             & $W_1$ is a sub-world of $W_2$\\
+        $  \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2 $         & $\Xi_1$ is a sub-schema of $\Xi_2$
     \end{tabular}
 
     \textbf{Notes}. (1) There might be too many contexts in some of these judgments.  In particular, worlds and schemata should be closed, and the judgments
@@ -249,12 +246,12 @@
     Before presenting the rules defining each of these judgments, let us go over some conventions that will simplify notation.
     
     For all the judgments except signature validity, we omit the subscript $\Sigma$ since the signature is fixed throughout any derivation.
-    Similarly, the schema context $\Omega$ is fixed except for the schema context well-formedness judgment, so we omit it as well.  In all judgments
-    except for meta-context validity, we assume that $\Delta$ is well-formed, and similarly we assume that $\Psi$ is well-formed in all judgments
-    except LF context validity.  
+    In all judgments except for meta-context validity, we assume that $\Delta$ is well-formed, and similarly we assume that $\Psi$ is well-formed 
+    in all the remaining judgments except LF context validity.  In practice, we would check that contexts are well-formed at the leaves of
+    the proof trees.
 
     For the synthesis judgments (those with $\Rar$), the contexts, signatures and first object on the right of the turnstile
-    are inputs, and the rest are outputs.  For instance, in $\Omega; \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L$, both $P$ and $L$ are outputs.
+    are inputs, and the rest are outputs.  For instance, in $ \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L$, both $P$ and $L$ are outputs.
     For the remaining jugments, everything is considered an input.  In all judgments, we assume that every input is well-formed and in canonical form.
     To enforce this, we need to use hereditary substitutions.
 
@@ -265,7 +262,7 @@
     
     \begin{align*}
         & \infer{\vdash \cdot \ \sig}{} &
-        & \infer{\vdash \Sigma, \textbf{s} \sqsubset \textbf{a} {::} L \sqsubset K \ \sig}
+        & \infer{\vdash \Sigma, \textbf{s}{::}L \sqsubset \textbf{a} {:}  K \ \sig}
           {
             \vdash \Sigma \ \sig
             &&
@@ -311,25 +308,9 @@
     uniform system by using $\top$ refinements in place of just kinds or types, so I would prefer to keep this approach and just add rules for
     these cases.
 
-\mlcomment{
-    % Schema context well-formedness
-    $\boxed{\vdash_\Sigma \Omega \ \sctx}$
-
-    \begin{align*}
-      & \infer{\vdash \cdot \ \sctx}{} &
-      & \infer{\vdash \Omega, \psi {:} \Xi \ \sctx}
-        {
-          \vdash \Omega \ \sctx
-          &&
-          \boldsymbol{\xi} {:} \Xi \in \Sigma
-        }
-    \end{align*}
-
-    \textbf{Remark}.  Maybe the names $\boldsymbol{\xi}$ are unnecessary in the signature.
-}
 
     % Meta-context well-formedness
-    $\boxed{\Omega \vdash_\Sigma \Delta \ \mctx}$
+    $\boxed{\vdash_\Sigma \Delta \ \mctx}$
 
     \begin{align*}
       & \infer{\vdash \cdot \ \mctx}{} &
@@ -354,6 +335,14 @@
           \Delta ; \Psi_2 \vdash \Psi_1 \ \ctx
         }
     \end{align*}
+    \begin{align*}
+      \infer{\vdash \Delta, \psi {:} \Xi \ \sctx}
+            {
+              \vdash \Delta \ \sctx
+              &&
+              \boldsymbol{\xi} {:} \Xi \in \Sigma
+            }
+    \end{align*}
 
     \textbf{Notes}. (1) I'm still unsure about the distinction between meta-variables ($u$) and parameter variables ($p$).  I think it's more about 
     the way they are used?  Specifically, $p$ should only be substituted with an ordinary variable.
@@ -364,7 +353,7 @@
     talks about substitution variables is \cite{Pientka2008}, but the context formation rules are not given there.
 
     % LF context well-formedness
-    $\boxed{\Omega ; \Delta \vdash_\Sigma \Psi \ \ctx}$
+    $\boxed{ \Delta \vdash_\Sigma \Psi \ \ctx}$
 
     \begin{align*}
       & \infer{\Delta \vdash \cdot \ \ctx}{} &
@@ -389,12 +378,28 @@
     \textbf{Remark}.  I've decided to use spines instead of substitutions for world parameters, mostly because users would want to refer to
     the terms during proofs, so that's what they would specify.
 
+    % LF contexts relation
+    $\boxed{\Delta \vdash_\Sigma \Psi_1 \leq \Psi_2}$
+
+    \begin{align*}
+      & \infer{\Delta \vdash \cdot \leq \cdot}{} &
+      & \infer{\Delta \vdash (\Psi_1, x{::}S_1 \sqsubset A) \leq (\Psi_2, x{::}S_2)}
+              {
+                \Delta \vdash  \Psi_1 \leq \Psi_2
+                &&
+                \Delta; \Psi_2 \vdash S_1 \leq S_2 \sqsubset A
+              }
+    \end{align*}
+
+    \textbf{Note}.  I'm not sure if we should have $\Delta; \Psi_1 \vdash S_1 \leq S_2 \sqsubset A$ as the premise (instead of the judgment with $\Psi_2$).
+    In a subtyping rule, we would use the most precise type in the context, but here it is the least precise context that is used.
+
     % Kind refinements
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma L \sqsubset K}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma L \sqsubset K}$
     
     \begin{align*}
       & \infer{\Delta ; \Psi \vdash \Sort \sqsubset \Type}{} &
-      & \infer{\Delta ; \Psi \vdash \Pi x{::}S \sqsubset A.L \sqsubset \Pi x{:}A.K}
+      & \infer{\Delta ; \Psi \vdash \Pi x{::}S.L \sqsubset \Pi x{:}A.K}
         {
           \Delta ; \Psi \vdash S \sqsubset A \Lar \Sort
           &&
@@ -417,16 +422,16 @@
     (2) Rules for \texttt{Rec} kinds are missing.
 
     % Class synthesis
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma Q \sqsubset P \Rar L}$
 
     \begin{align*}
       & \infer{\Delta ; \Psi \vdash \textbf{s} \sqsubset \textbf{a} \Rar L}
         {
-          \textbf{s} \sqsubset \textbf{a} {::} L \sqsubset K \in \Sigma
+          \textbf{s} {::} L \sqsubset \textbf{a} {:} K \in \Sigma
         } &
       & \infer{\Delta; \Psi \vdash Q \ N \sqsubset P \ N \Rar [N/x]L}
         {
-          \Delta ; \Psi \vdash Q \sqsubset P \Rar \Pi x{::}S \sqsubset A. L
+          \Delta ; \Psi \vdash Q \sqsubset P \Rar \Pi x{::}S. L
           &&
           \Delta ; \Psi \vdash N \Lar S \sqsubset A
         }
@@ -443,14 +448,14 @@
     \end{align*}
 
     % Class checking (only against Sort)
-    $\boxed{\Omega ; \Delta ; \Psi \vdash_\Sigma S \sqsubset A \Lar \Sort}$
+    $\boxed{\Delta ; \Psi \vdash_\Sigma S \sqsubset A \Lar \Sort}$
 
     \begin{align*}
       & \infer{\Delta; \Psi \vdash Q \sqsubset P \Lar \Sort}
         {
           \Delta; \Psi \vdash Q \sqsubset P \Rar \Sort
         } &
-      & \infer{\Delta; \Psi \vdash \Pi x{::}S \sqsubset A. S' \sqsubset \Pi x{:}A.A' \Lar \Sort}
+      & \infer{\Delta; \Psi \vdash \Pi x{::}S. S' \sqsubset \Pi x{:}A.A' \Lar \Sort}
         {
           \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
           &&
@@ -471,7 +476,7 @@
     a type well-formedness judgment.
 
     % Sort/type checking
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma N \Lar S \sqsubset A}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma N \Lar S \sqsubset A}$
 
     \begin{align*}
       & \infer{\Delta; \Psi \vdash R \Lar S' \sqsubset A}
@@ -480,7 +485,7 @@
           &&
           \Delta; \Psi \vdash S \leq S' \sqsubset A
         } &
-      & \infer{\Delta; \Psi \vdash \lambda x.N \Lar \Pi x{::}S \sqsubset A.S' \sqsubset \Pi x{:}A.A'}
+      & \infer{\Delta; \Psi \vdash \lambda x.N \Lar \Pi x{::}S.S' \sqsubset \Pi x{:}A.A'}
         {
           \Delta; \Psi, x{::}S \sqsubset A \vdash N \Lar S' \sqsubset A'
         }
@@ -495,7 +500,7 @@
     \end{align*}
 
     % Sort/type synthesis
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma R \Rar S \sqsubset A}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma R \Rar S \sqsubset A}$
     \begin{align*}
       & \infer{\Delta; \Psi \vdash \textbf{c} \Rar S \sqsubset A}
         {
@@ -538,13 +543,13 @@
     \textbf{Note}.  The rules for parameter variables, meta-variables, and closures are still missing.  
 
     % Substitutions
-    $\boxed{\Omega; \Delta; \Psi_1 \vdash_\Sigma \sigma \Lar \Psi_2}$
+    $\boxed{ \Delta; \Psi_1 \vdash_\Sigma \sigma \Lar \Psi_2}$
 
     \begin{align*}
       & \infer{\Delta; \Psi_1 \vdash \cdot \Lar \cdot}{} &
       & \infer{\Delta; \Psi_1 \vdash s[\sigma] \Lar \Psi_2}
         {
-          \Delta; \Psi \vdash \sigma \Lar \Psi_2'
+          \Delta; \Psi_1 \vdash \sigma \Lar \Psi_2'
           &&
           s{::}\Psi_2[\Psi_2'] \in \Delta
         }
@@ -559,13 +564,18 @@
         }
     \end{align*}
     \begin{align*}
-      \infer{\Delta; \Psi_1 \vdash (\sigma; \overleftarrow{M}) \Lar (\Psi_2, x{:} \textbf{w} \ \vec{M})}
+      \infer{\Delta; \Psi_1 \vdash (\sigma; B) \Lar (\Psi_2, x{:} \textbf{w} \ \vec{M})}
             {
-              \Delta; \Psi \vdash \overrightarrow{S \sqsubset A} \Lar \Sort
+              \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}
               &&
-              \Delta; \Psi, (\overrightarrow{x{::}S \sqsubset A}) \vdash \langle \ell_i {::} S_i \sqsubset B_i \rangle_n
+              \Delta; \Psi, (\overrightarrow{x{::}S \sqsubset A}) \vdash B \ \block %\langle \ell_i {::} S_i \sqsubset B_i \rangle_n
             }
     \end{align*}
+
+    \textbf{Notes}. (1) The rule for substitution of $x : \textbf{w} \ \vec{M}$ could be better.  In particular, the world's signature should appear
+    in the premises to ensure well-formedness.
+
+    (2) The rule for substitution variables could be enhanced with a context relation.  (Later, I'll ignore substitution variables for now)
 
     \textbf{Remark}.  The premise $\Delta; \Psi \vdash \overrightarrow{S \sqsubset A} \Lar \Sort$ checks that all the sorts are valid, given that 
     the previous ones are.  Formally, this auxilliary judgment is given by the following two rules :
@@ -580,7 +590,7 @@
     \end{align*}
 
     % Subsorting
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A }$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma S_1 \leq S_2 \sqsubset A }$
     
     \begin{align*}
       & \infer{\Delta; \Psi \vdash S \leq S \sqsubset A}{\Delta; \Psi \vdash S \sqsubset A} &
@@ -593,7 +603,7 @@
     \end{align*}
     \begin{align*}
       & \infer{\Delta; \Psi \vdash S \leq \top \sqsubset A}{\Delta; \Psi \vdash S \sqsubset A} &
-      & \infer{\Delta; \Psi \vdash \Pi x{::}S_1 \sqsubset A. S_1' \leq \Pi x{::}S_2 \sqsubset A. S_2' \sqsubset \Pi x{:}A.A'}
+      & \infer{\Delta; \Psi \vdash \Pi x{::}S_1. S_1' \leq \Pi x{::}S_2. S_2' \sqsubset \Pi x{:}A.A'}
         {
           \Delta; \Psi \vdash S_2 \leq S_1 \sqsubset A
           &&
@@ -640,7 +650,7 @@
     \end{align*}
     
     % World well-formedness    
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W \ \world}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma W \ \world}$
 
     \begin{align*}
       & \infer{\Delta; \Psi \vdash B \ \world}{\Delta; \Psi \vdash B \ \block} &
@@ -652,24 +662,8 @@
               }
     \end{align*}
 
-    
-%    \begin{align*}
-%      \infer{\Delta; \Psi \vdash \Pi \overrightarrow{x{::}S \sqsubset A}.\langle \ell_i {::} S_i \sqsubset B_i \rangle_n}
-%            {
-%              \Delta; \Psi \vdash \overrightarrow{ S \sqsubset A} \Lar \Sort
-%              &&
-%              \Delta; \Psi \vdash, (\overrightarrow{x{::}S \sqsubset A}) \vdash \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \Lar \Rec
-%            }
-%    \end{align*}
-
-    \textbf{Notes}. (1) The judgment for \texttt{Rec} kinds is still not defined.
-    
-    (2) There's also a possible alternative set of rules where we add the parameters one at a time, although it requires separated the syntactic
-    category of worlds in two parts, one for records and one for parametrized records.  It also requires two corresponding notions of sub-worlds.
-    So, it's a bit more verbose, but it's a lot more straightforward.
-
     % Schema well-formedness
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi \ \schema}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma \Xi \ \schema}$
 
     \begin{align*}
       & \infer{\Delta; \Psi \vdash \varepsilon \ \schema}{} &
@@ -687,30 +681,30 @@
     So, they may not be needed at all in this case.
 
     % Schemaing of LF contexts
-    $\boxed{\Omega; \Delta \vdash_\Sigma \Psi : \Xi}$
+    $\boxed{ \Delta \vdash_\Sigma \Psi : \Xi}$
     
     \begin{align*}
-      & \infer{\Omega; \Delta \vdash \cdot {:} \varepsilon}{} &
-      & \infer{\Omega; \Delta \vdash \psi {:} \Xi}{\psi {:} \Xi \in \Omega} &
-      & \infer{\Omega; \Delta \vdash \Psi {:} \Xi_2}
+      & \infer{ \Delta \vdash \cdot {:} \varepsilon}{} &
+      & \infer{ \Delta \vdash \psi {:} \Xi}{\psi {:} \Xi \in \Delta} &
+      & \infer{ \Delta \vdash \Psi {:} \Xi_2}
         {
-          \Omega; \Delta \vdash \Psi {:} \Xi_1
+           \Delta \vdash \Psi {:} \Xi_1
           &&
-          \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+           \Delta \vdash \Xi_1 \leq \Xi_2
         }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta \vdash (\Psi, x{:} \textbf{w} \ \vec{M}) : \Xi}
+      \infer{ \Delta \vdash (\Psi, x{:} \textbf{w} \ \vec{M}) : \Xi}
             {
-              \Omega; \Delta \vdash \Psi : \Xi
+               \Delta \vdash \Psi : \Xi
               &&
               \textbf{w} {:} \Pi \overrightarrow{x{::}S \sqsubset A}. \langle \ell_i {::} S_i \sqsubset B_i \rangle_n \in \Xi
               &&
-              \Omega ; \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}
+              \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}
             }
     \end{align*}
 
-    \textbf{Note}. The judgment $\Omega; \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}$ is just checking each of the terms in the 
+    \textbf{Note}. The judgment $ \Delta; \Psi \vdash \vec{M} \Lar \overrightarrow{S \sqsubset A}$ is just checking each of the terms in the 
     spine $\vec{M}$ against the corresponding type (which may depend on the previous terms).  Rules will be added soon.
 
     % Sub-blocks
@@ -737,7 +731,7 @@
     \end{align*}
 
     % Sub-worlds
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$ \\
+    $\boxed{ \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$ \\
     \begin{align*}
       & \infer{\Delta; \Psi \vdash B_1 \leq B_2 \quad (\text{as worlds})}
               {
@@ -764,7 +758,7 @@
     sub-worlds, which is also not the case when subtyping function spaces.
     
     % Sub-schema
-    $\boxed{\Omega; \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2}$
+    $\boxed{ \Delta; \Psi \vdash_\Sigma \Xi_1 \leq \Xi_2}$
     \begin{align*}
       & \infer{\Delta; \Psi \vdash \varepsilon \leq \Xi}{\Delta; \Psi \vdash \Xi \ \schema} &
       & \infer{\Delta; \Psi \vdash \Xi_1 + W_1 \leq \Xi_2 + W_2}
@@ -786,11 +780,11 @@
       \begin{tabular}{rrl}
         Contexts                & $\Gamma ::=$ & $\cdot \mid \Gamma, y{::}\mu \sqsubset \kappa$ \\
                                 &              & \\
-        Kinds                   & $\kappa ::=$ & $\ctype \mid \Pi x{:}A.\kappa$ \\
-        Classes                 & $\zeta ::=$  & $\csort \mid \Pi x{::}S \sqsubset A. \zeta \mid \top \mid \zeta_1 \land \zeta_2$ \\
+        Kinds                   & $\kappa ::=$ & $\ctype \mid \Pi x{:}A[\Psi].\kappa$ \\
+        Classes                 & $\zeta ::=$  & $\csort \mid \Pi x{::}S[\Psi]. \zeta \mid \top \mid \zeta_1 \land \zeta_2$ \\
                                 &              & \\
         Types                   & $\tau ::=$   & $A[\Psi] \mid \tau_1 \rar \tau_2 \mid \Pi \psi{:}\Xi. \tau \mid \Pi^\square u{:}A[\Psi]. \tau$ \\
-        Sorts                   & $\mu ::=$    & $S[\Psi] \mid \mu_1 \rar \mu_2 \mid \Pi \psi{:}\Xi.\mu \mid \Pi^\square u{::}S[\Psi] \sqsubset A[\Psi].\mu 
+        Sorts                   & $\mu ::=$    & $S[\Psi] \mid \mu_1 \rar \mu_2 \mid \Pi \psi{:}\Xi.\mu \mid \Pi^\square u{::}S[\Psi].\mu 
                                                   \mid \top \mid \mu_1 \land \mu_2$ \\
                                 &              & \\
         Checked expressions     & $e ::=$      & $i \mid \rec \ f.e \mid \fn \ y.e \mid \Lambda \psi. e \mid \lambda^\square u.e 
@@ -821,14 +815,14 @@
     We have the follow computation level judgments :
 
     \begin{tabular}{ll}
-      $\Omega; \Delta \vdash_\Sigma \Gamma \ \cctx$                                         & $\Gamma$ is a well-formed context \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa$                       & Class $\zeta$ refines kind $\kappa$ \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort$               & Sort $\mu$ refines type $\tau$ \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau$                    & Expression $e$ checks agains sort $\mu$ refining type $\tau$ \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau$                    & Expression $i$ synthesizes saor $\mu$ refining type $\tau$ \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau$ & Branch $b$ checks against $\mu$ refining $\tau$ 
+      $ \Delta \vdash_\Sigma \Gamma \ \cctx$                                         & $\Gamma$ is a well-formed context \\
+      $ \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa$                       & Class $\zeta$ refines kind $\kappa$ \\
+      $ \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort$               & Sort $\mu$ refines type $\tau$ \\
+      $ \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau$                    & Expression $e$ checks agains sort $\mu$ refining type $\tau$ \\
+      $ \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau$                    & Expression $i$ synthesizes saor $\mu$ refining type $\tau$ \\
+      $ \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau$ & Branch $b$ checks against $\mu$ refining $\tau$ 
                                                                                            when analyzing a $\mu'$ refining $\tau'$ \\
-      $\Omega; \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau$              & $\mu_1$ is a subsort of $\mu_2$ 
+      $ \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau$              & $\mu_1$ is a subsort of $\mu_2$ 
     \end{tabular}
 
     Again, we omit the subscript $\Sigma$ since it is fixed throughout any derivation, and we assume that all inputs are well-formed.  The system should
@@ -840,77 +834,76 @@
     (2) Since we are just lifting everything to the computation level, it may be redundant to have $\top$ and intersection computation-level sorts (and 
     classes) since they could probably always be inferred from $\top$ and intersection data-level sorts (and classes).
 
-    (3) Every time we use $\Pi$-sorts, we have the overlying $\Pi$-type, so we can probably remove the domain type from the sort.  For instance, we would 
-    have $\Pi^\square u{::}S[\Psi]. \mu$ instead of $\Pi^\square u{::}S[\Psi] \sqsubset A[\Psi]. \mu$.  This also applies at the data level.
+    (3) The rules for refinement should be enhanced with (LF) context relations
 
     % Context well-formedness
-    $\boxed{\Omega; \Delta \vdash_\Sigma \Gamma \ \cctx}$
+    $\boxed{ \Delta \vdash_\Sigma \Gamma \ \cctx}$
     
     \begin{align*}
-      & \infer{\Omega; \Delta \vdash \cdot \ \cctx}{} &
-      & \infer{\Omega; \Delta \vdash \Gamma, y{::}\mu \sqsubset \tau \ \cctx}
+      & \infer{ \Delta \vdash \cdot \ \cctx}{} &
+      & \infer{ \Delta \vdash \Gamma, y{::}\mu \sqsubset \tau \ \cctx}
         {
-          \Omega; \Delta \vdash \Gamma \ \cctx
+           \Delta \vdash \Gamma \ \cctx
           &&
-          \Omega; \Delta; \Gamma \vdash \mu \sqsubset \tau \Lar \tau
+           \Delta; \Gamma \vdash \mu \sqsubset \tau \Lar \tau
         }
     \end{align*}
 
     % Class refining kinds
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma \zeta \sqsubset \kappa}$
     
     \begin{align*}
-      & \infer{\Omega; \Delta; \Gamma \vdash \csort \sqsubset \ctype}{} &
-      & \infer{\Omega; \Delta; \Gamma \vdash \top \sqsubset \kappa}{}
+      & \infer{ \Delta; \Gamma \vdash \csort \sqsubset \ctype}{} &
+      & \infer{ \Delta; \Gamma \vdash \top \sqsubset \kappa}{}
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \Pi y{::}S[\Psi] \sqsubset A[\Psi]. \zeta \sqsubset \Pi y{:}A[\Psi]. \kappa}
+      \infer{ \Delta; \Gamma \vdash \Pi y{::}S[\Psi]. \zeta \sqsubset \Pi y{:}A[\Psi]. \kappa}
             {
-              \Omega; \Delta; \Psi \vdash S \sqsubset A
+               \Delta; \Psi \vdash S \sqsubset A
               &&
-              \Omega; \Delta; \Gamma, y{::}S[\Psi] \sqsubset A[\Psi] \vdash \zeta \sqsubset \kappa
+               \Delta; \Gamma, y{::}S[\Psi] \sqsubset A[\Psi] \vdash \zeta \sqsubset \kappa
             }
     \end{align*}    
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \zeta_1 \land \zeta_2 \sqsubset \kappa}
+      \infer{ \Delta; \Gamma \vdash \zeta_1 \land \zeta_2 \sqsubset \kappa}
             {
-              \Omega; \Delta; \Gamma \vdash \zeta_1 \sqsubset \kappa
+               \Delta; \Gamma \vdash \zeta_1 \sqsubset \kappa
               &&
-              \Omega; \Delta; \Gamma \vdash \zeta_2 \sqsubset \kappa
+               \Delta; \Gamma \vdash \zeta_2 \sqsubset \kappa
             }
     \end{align*}
 
     \textbf{Note}.  For the $\Pi$ rule, it indeed seems better to have the boxed LF contexts since we establish $S \sqsubset A$ at the data-level.
 
     % Sorts refining types
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma \mu \sqsubset \tau \Lar \csort}$
 
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi] \Lar \csort}
-            {\Omega; \Delta; \Psi \vdash S \sqsubset A \Lar \Sort}
+      \infer{ \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi] \Lar \csort}
+            { \Delta; \Psi \vdash S \sqsubset A \Lar \Sort}
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2 \Lar \csort}
+      \infer{ \Delta; \Gamma \vdash \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2 \Lar \csort}
             {
-              \Omega; \Delta; \Gamma \vdash \mu_1 \sqsubset \tau_1 \Lar \csort
+               \Delta; \Gamma \vdash \mu_1 \sqsubset \tau_1 \Lar \csort
               &&
-              \Omega; \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash \mu_2 \sqsubset \tau_2 \Lar \csort
+               \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash \mu_2 \sqsubset \tau_2 \Lar \csort
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \Pi^\square u{::} S[\Psi] \sqsubset A[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau \Lar \csort}
+      \infer{ \Delta; \Gamma \vdash \Pi^\square u{::} S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau \Lar \csort}
             {
-              \Omega; \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
+               \Delta; \Psi \vdash S \sqsubset A \Lar \Sort
               &&
-              \Omega; \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu \sqsubset \tau \Lar \csort
+               \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu \sqsubset \tau \Lar \csort
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash\Pi \psi{:}\Xi_1 . \mu \sqsubset \Pi \psi{:}\Xi_2 . \tau \Lar \csort}
+      \infer{ \Delta; \Gamma \vdash\Pi \psi{:}\Xi_1 . \mu \sqsubset \Pi \psi{:}\Xi_2 . \tau \Lar \csort}
             {
-              \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+               \Delta \vdash \Xi_1 \leq \Xi_2
               &&
-              \Omega, \psi{:}\Xi_1; \Delta; \Gamma \vdash \mu \sqsubset \tau
+              \Delta, \psi{:}\Xi_1; \Gamma \vdash \mu \sqsubset \tau
             }
     \end{align*}
 
@@ -920,98 +913,98 @@
     more likely that the other sorts are missing).
 
     % Expression sort/type-checking
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma e \Lar \mu \sqsubset \tau}$
 
     \begin{align*}
-      & \infer{\Omega; \Delta; \Gamma \vdash i \Lar \mu' \sqsubset \tau}
+      & \infer{ \Delta; \Gamma \vdash i \Lar \mu' \sqsubset \tau}
         {
-          \Omega; \Delta; \Gamma \vdash i \Rar \mu \sqsubset \tau
+           \Delta; \Gamma \vdash i \Rar \mu \sqsubset \tau
           &&
-          \Omega; \Delta; \Gamma \vdash \mu \leq \mu' \sqsubset \tau
+           \Delta; \Gamma \vdash \mu \leq \mu' \sqsubset \tau
         } &
-      & \infer{\Omega; \Delta; \Gamma \vdash \bbox(\Psi. M) \Lar S[\Psi] \sqsubset A[\Psi]}
+      & \infer{ \Delta; \Gamma \vdash \bbox(\Psi. M) \Lar S[\Psi] \sqsubset A[\Psi]}
         {
-          \Omega; \Delta; \Psi \vdash M \Lar S \sqsubset A
+           \Delta; \Psi \vdash M \Lar S \sqsubset A
         }
     \end{align*}
     \begin{align*}
-      & \infer{\Omega; \Delta; \Gamma \vdash \rec \ f.e \Lar \mu \sqsubset \tau}
+      & \infer{ \Delta; \Gamma \vdash \rec \ f.e \Lar \mu \sqsubset \tau}
         {
-          \Omega; \Delta; \Gamma, f{::}\mu \sqsubset \tau \vdash e \Lar \mu \sqsubset \tau
+           \Delta; \Gamma, f{::}\mu \sqsubset \tau \vdash e \Lar \mu \sqsubset \tau
         } &
-      & \infer{\Omega; \Delta; \Gamma \vdash \fn \ y.e \Lar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2}
+      & \infer{ \Delta; \Gamma \vdash \fn \ y.e \Lar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2}
         {
-          \Omega; \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash e \Lar \mu_2 \sqsubset \tau_2
+           \Delta; \Gamma, y{::}\mu_1 \sqsubset \tau_1 \vdash e \Lar \mu_2 \sqsubset \tau_2
         }
     \end{align*}
     \begin{align*}
-      & \infer{\Omega; \Delta; \Gamma \vdash \lambda^\square u.e \Lar \Pi^\square u{::}S[\Psi] \sqsubset A[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau}
+      & \infer{ \Delta; \Gamma \vdash \lambda^\square u.e \Lar \Pi^\square u{::}S[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau}
         {
-          \Omega; \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash e \Lar \mu \sqsubset \tau
+           \Delta, u{::}S[\Psi] \sqsubset A[\Psi]; \Gamma \vdash e \Lar \mu \sqsubset \tau
         }
-      & \infer{\Omega; \Delta; \Gamma \vdash \Lambda \psi. e \Lar \Pi \psi{:}\Xi.\mu \sqsubset \Pi \psi {:} \Xi. \tau}
+      & \infer{ \Delta; \Gamma \vdash \Lambda \psi. e \Lar \Pi \psi{:}\Xi.\mu \sqsubset \Pi \psi {:} \Xi. \tau}
         {
-          \Omega, \psi{:}\Xi; \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau
+          \Delta, \psi{:}\Xi; \Gamma \vdash e \Lar \mu \sqsubset \tau
         }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \case \ i \ \of \ b_1 \mid ... \mid b_n \Lar \mu \sqsubset \tau}
+      \infer{ \Delta; \Gamma \vdash \case \ i \ \of \ b_1 \mid ... \mid b_n \Lar \mu \sqsubset \tau}
             {
-              \Omega; \Delta; \Gamma \vdash i \Rar A[\Psi]
+               \Delta; \Gamma \vdash i \Rar A[\Psi]
               &&
-              \text{for all } k \ \Omega; \Delta; \Gamma \vdash b_k \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau
+              \text{for all } k \  \Delta; \Gamma \vdash b_k \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau
             }
     \end{align*}
 
     % Expression sort/type synthesis
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
     
     \begin{align*}
-      & \infer{\Omega; \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau}
+      & \infer{ \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau}
         {
-          \Omega; \Delta; \Gamma \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau
+           \Delta; \Gamma \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau
         } &
-      & \infer{\Omega; \Delta; \Gamma \vdash y \Rar \mu \sqsubset \tau}{y{::}\mu \sqsubset \tau \in \Gamma}
+      & \infer{ \Delta; \Gamma \vdash y \Rar \mu \sqsubset \tau}{y{::}\mu \sqsubset \tau \in \Gamma}
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash i \ e \Rar \mu_2 \sqsubset \tau_2}
+      \infer{ \Delta; \Gamma \vdash i \ e \Rar \mu_2 \sqsubset \tau_2}
             {
-              \Omega; \Delta; \Gamma \vdash i \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2
+               \Delta; \Gamma \vdash i \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2
               &&
-              \Omega; \Delta; \Gamma \vdash e \Lar \mu_1 \sqsubset \tau_1
+               \Delta; \Gamma \vdash e \Lar \mu_1 \sqsubset \tau_1
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash i \ \lceil \Psi \rceil \Rar \llbracket \Psi/\psi \rrbracket (\mu \sqsubset \tau)}
+      \infer{ \Delta; \Gamma \vdash i \ \lceil \Psi \rceil \Rar \llbracket \Psi/\psi \rrbracket (\mu \sqsubset \tau)}
             {
-              \Omega; \Delta; \Gamma \vdash i \Rar \Pi \psi{:}\Xi_1. \mu \sqsubset \Pi \psi{:}\Xi_2. \tau
+               \Delta; \Gamma \vdash i \Rar \Pi \psi{:}\Xi_1. \mu \sqsubset \Pi \psi{:}\Xi_2. \tau
               &&
-              \Omega; \Delta; \Gamma \vdash \Psi : \Xi_1
+               \Delta; \Gamma \vdash \Psi : \Xi_1
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash i \ \lceil \Psi. M \rceil \Rar \rrbracket \Psi. M / u \rrbracket (\mu \sqsubset \tau)}
+      \infer{ \Delta; \Gamma \vdash i \ \lceil \Psi. M \rceil \Rar \llbracket \Psi. M / u \rrbracket (\mu \sqsubset \tau)}
             {
-              \Omega; \Delta; \Gamma \vdash i \Rar \Pi^\square u{::}S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau
+               \Delta; \Gamma \vdash i \Rar \Pi^\square u{::}S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau
               &&
-              \Omega; \Delta; \Psi \vdash M \Lar S \sqsubset A
+               \Delta; \Psi \vdash M \Lar S \sqsubset A
             }
     \end{align*}
 
     % Branch sorting/typing
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma b \Lar_{\mu' \sqsubset \tau'} \mu \sqsubset \tau}$
 
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \Pi \Delta_k . \bbox(\Psi. M_k) : S_k[\Psi_k]  \sqsubset A_k[\Psi_k] \mapsto e_k 
+      \infer{ \Delta; \Gamma \vdash \Pi \Delta_k . \bbox(\Psi. M_k) : S_k[\Psi_k]  \sqsubset A_k[\Psi_k] \mapsto e_k 
                                                 \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau}
             {
-              \Omega; \Delta; \Gamma \vdash M_k \Lar S_k \sqsubset A_k
+               \Delta; \Gamma \vdash M_k \Lar S_k \sqsubset A_k
               &&
               \begin{array}{ll}
-                \Omega; \Delta, \Delta_k & \vdash \Psi \doteq \Psi_k / (\theta_1, \Delta') \\
-                \Omega; \Delta'          & \vdash \llbracket \theta_1 \rrbracket ( S \sqsubset A) \doteq 
+                 \Delta, \Delta_k & \vdash \Psi \doteq \Psi_k / (\theta_1, \Delta') \\
+                 \Delta'          & \vdash \llbracket \theta_1 \rrbracket ( S \sqsubset A) \doteq 
                                                   \llbracket \theta_1 \rrbracket(S_k \sqsubset A_k)/(\theta_2, \Delta'') \\
-                \Omega; \Delta'';\llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket \Gamma & \vdash
+                 \Delta'';\llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket \Gamma & \vdash
                                         \llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket e_k 
                                         \Lar \llbracket \theta_2 \rrbracket \llbracket \theta_1 \rrbracket (\mu \sqsubset \tau)
               \end{array}
@@ -1019,38 +1012,37 @@
     \end{align*}
 
     % Subsorting
-    $\boxed{\Omega; \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau}$
+    $\boxed{ \Delta; \Gamma \vdash_\Sigma \mu_1 \leq \mu_2 \sqsubset \tau}$
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi]}
+      \infer{ \Delta; \Gamma \vdash S[\Psi] \sqsubset A[\Psi]}
             {
-              \Omega; \Delta; \Psi \vdash S \sqsubset A
+               \Delta; \Psi \vdash S \sqsubset A
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash\mu_1 \rar \mu_1' \leq \mu_2 \rar \mu_2' \sqsubset \tau \rar \tau'}
+      \infer{ \Delta; \Gamma \vdash\mu_1 \rar \mu_1' \leq \mu_2 \rar \mu_2' \sqsubset \tau \rar \tau'}
             {
-              \Omega; \Delta; \Gamma \vdash \mu_2 \leq \mu_1 \sqsubset \tau
+               \Delta; \Gamma \vdash \mu_2 \leq \mu_1 \sqsubset \tau
               &&
-              \Omega; \Delta; \Gamma, y{::} \mu_2 \sqsubset \tau \vdash \mu_1' \leq \mu_2' \sqsubset \tau'
+               \Delta; \Gamma, y{::} \mu_2 \sqsubset \tau \vdash \mu_1' \leq \mu_2' \sqsubset \tau'
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash\Pi^\square u{::}S_1[\Psi] \sqsubset A[\Psi]. \mu_1 
-                                             \leq \Pi^\square u{::}S_2[\Psi] \sqsubset A[\Psi]. \mu_2 \sqsubset \Pi^\square u{:} A[\Psi]. \tau}
+      \infer{ \Delta; \Gamma \vdash\Pi^\square u{::}S_1[\Psi]. \mu_1 \leq \Pi^\square u{::}S_2[\Psi]. \mu_2 \sqsubset \Pi^\square u{:} A[\Psi]. \tau}
             {
-              \Omega; \Delta; \Psi \vdash S_2 \leq S_1 \sqsubset A
+               \Delta; \Psi \vdash S_2 \leq S_1 \sqsubset A
               &&
-              \Omega; \Delta, u{::} S_2[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
+               \Delta, u{::} S_2[\Psi] \sqsubset A[\Psi]; \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
             }
     \end{align*}
     \begin{align*}
-      \infer{\Omega; \Delta; \Gamma \vdash \Pi \psi{:}\Xi_1. \mu_1 \leq \psi{:}\Xi_2. \mu_2 \sqsubset \Pi \psi{:}\Xi. \tau}
+      \infer{ \Delta; \Gamma \vdash \Pi \psi{:}\Xi_1. \mu_1 \leq \psi{:}\Xi_2. \mu_2 \sqsubset \Pi \psi{:}\Xi. \tau}
             {
-              \Omega; \Delta \vdash \Xi_1 \leq \Xi_2
+               \Delta \vdash \Xi_1 \leq \Xi_2
               &&
-              \Omega; \Delta \vdash \Xi_2 \leq \Xi
+               \Delta \vdash \Xi_2 \leq \Xi
               &&
-              \Omega, \psi{:}\Xi_1; \Delta, \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
+              \Delta,\psi{:}\Xi_1; \Gamma \vdash \mu_1 \leq \mu_2 \sqsubset \tau
             }
     \end{align*}
 
