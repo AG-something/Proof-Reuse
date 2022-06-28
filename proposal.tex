@@ -10,6 +10,7 @@
 \usepackage[natural, dvipsnames, pdftex]{xcolor}
 \usepackage{tikz} %Drawing pretty pictures
 \usepackage{verbatim} %adding code
+\usepackage{listings} % adding code that contains symbols
 \usepackage[pdftex,  colorlinks=true]{hyperref}%Hyperlinks, with \href
 \hypersetup{urlcolor=RoyalBlue,  linkcolor=RedOrange,  citecolor=black}
 
@@ -95,6 +96,13 @@
 \begin{document}
     \maketitle
 
+    \section{Introduction}
+    % The whole introduction needs to be rewritten.
+    % The project now focuses exclusively on refinements, constructor subtyping and ornaments are left for later
+    %  *  So, maybe the title should change as well
+    %  ** Hurray for easy 'further work' section
+
+
     % First paragraph is very bad, need an actual sujet amene
     It is common in the literature to reuse proofs of previously established results in order to derive new theorems.  A common pattern in papers
     is to start from a well understood language (often System F, LF, or the Calculus of Construction), add a new construct to it (e.g. subtyping,
@@ -121,7 +129,8 @@
     This idea is simple : if a type $B$ has all the constuctors of another type $A$ and possibly more, then $B$ can be viewed as a supertype of $A$.
     Intuitively, this is because any object constructed with only the constructors defining $A$ could also be constructed by the constructors defining $B$.
     In this setting, we get a notion of co-inheritance \cite{Poll1997}.  This can be seen as dual to the inheritance mechanisms of object oriented programming,
-    in the sense that a co-inherited function is lifted from a subtype to its supertype, and then extended with the cases to cover the extra constructors (if needed).
+    in the sense that a co-inherited function is lifted from a subtype to its supertype, and then extended with the cases to cover the extra constructors 
+    (if needed).
     
     % Might ditch ornaments for now, it's kind of complicated and mysterious
     The third direction is to add ornaments \cite{McBride2011}.  Here, we obtain systematic ways to enhance a type and/or its constructors with 
@@ -132,7 +141,7 @@
     are either things that I didn't think of before I started typing this down, or places where I realized there is a mistake.
 
 
-    \section{A refinement type system for Beluga}
+%    \section{A refinement type system for Beluga}
     
     We start with refinements because it is the most invasive change to the language.  This is due to the fact that we now want to assign both sorts
     and types to terms, which is done in a single judgment.  This change is also present at the level of types, which are classified by both classes
@@ -146,14 +155,112 @@
     sub-sorting relation that is akin to logical implication, that is $S_1 \leq S_2 \sqsubset A$ if the property $S_1$ implies the property $S_2$ for
     any term of type $A$.  In particular, if we have proven a result on terms of sort $S_2$, then we can reuse the proof on terms of sort $S_1$.
 
-    \subsection{Data-level}
+    \section{Motivating Examples}
+
+    \subsection{Values and Terms}
+    
+    In a framework without refinements, being a value is usually encoded as a property of terms, i.e. as a type of kind \texttt{tm -> type}.  When
+    refinements are added, it becomes simpler to have a sort of values refining the type of terms.  So, an encoding of the $\lambda$-calculus with
+    natural numbers could be the following :
+
+    \begin{lstlisting}[mathescape, basicstyle=\fontfamily{lmvtt}\selectfont]
+      LF term : type =
+        | value : sort
+        | zero : value
+        | succ : (value -> value) $\land$ (term -> term)
+        | lam : (value -> term) -> value
+        | app : term -> term -> term
+      ;
+    \end{lstlisting}
+
+    Here, we make use of intersection sorts when specifying the \texttt{succ} constructors, which can be applied to arbitrary terms, but should only 
+    yield a value when it is applied to a value. Note also that the \texttt{lam} constructor is given sort \texttt{(value -> term) -> value}, which 
+    enforces a call-by-value semantic in the language.  Now, let's define a big-step semantics for this small language :
+
+    \begin{lstlisting}[mathescape, basicstyle=\fontfamily{lmvtt}\selectfont]
+      LF big_step : term -> value -> type =
+        | bs_zero : big_step zero zero
+        | bs_succ : big_step M V -> big_step (succ M) (succ V)
+        | bs_lam : big_step (lam M) (lam M)
+        | bs_app : big_step F (lam M) 
+                   -> big_step N V' 
+                   -> big_step (M V') V 
+                   -> big_step (app F N) V
+    \end{lstlisting}
+
+    Without refinements, our big-step semantics would instead have kind \texttt{term -> term -> type}, and the first thing that we would want is to prove 
+    that if \texttt{big\_step M V}, then \texttt{V} is a value.  Adding refinements allows us to specify this property directly and verify it automatically
+    at type-checking, thus reducing the number of lemmas that one needs to prove about their language.
+
+    It should be noted that this improvement can be done without the use of refinements, by first defining a type of values and having a term constructor 
+    that lifts all values to terms, that is a constructor of type \texttt{value -> term}.  However, this approach creates an unnecessary separation between
+    values and terms, whereas refinements merely distinguish values as a special subset of terms.  Due to this separation, if we want to prove a lemma that 
+    holds of arbitrary terms (possibly with some restriction), we often need to first prove a separate lemma just for values, so that we can use it to handle
+    the case of values.  When considering values as a sort refining terms, this should not be necessary since we 
+
+    \subsection{Bidirectional Typing}
+    
+    In bidirectional typing, we separate terms in two categories, normal and neutral, which correspond to introduction and elimination forms, respectively.  
+    The type of a neutral term is synthesized, while the type of a normal term is checked.  So, a simply-typed $\lambda$-calculus with a base type and a 
+    constant would have the following syntax :
+
+    \begin{center}
+      \begin{tabular}{rrl}
+        Types          & $A,B ::=$ & $\texttt{b} \mid A \rar B$ \\
+        Normal terms   & $M,N ::=$ & $R \mid \texttt{c} \mid \lambda x. M$ \\
+        Neutral terms  & $R ::=$   & $x \mid R \ M$
+      \end{tabular}
+    \end{center}
+
+    To encode this without refinements, we would usually start with a type \texttt{tm : type} of terms, and define normal and neutral as predicates of kind 
+    \texttt{tm -> type}.  Alternatively, we could encode normal and neutral terms directly, following the above syntax.  However, this would make it more
+    difficult to prove lemmas pertaining to all terms, as we would likely need to separate such a lemma in two parts, one for normal terms, and one for 
+    neutral terms.  Using refinements, we can give the following encoding instead :
+
+    \begin{lstlisting}[mathescape, basicstyle=\fontfamily{lmvtt}\selectfont]
+      LF tp : type = 
+        | base : tp
+        | arr : tp -> tp -> tp
+      ;
+
+      LF tm : type =
+        | normal : sort
+        | neutral : sort
+        | neutral $\leq$ normal
+        | const : normal
+        | lam : (term -> normal) -> normal
+        | app : neutral -> normal -> neutral
+      ;
+    \end{lstlisting}
+
+    In this definition, we use the subsorting mechanism to encode the fact that neutral terms can be considered as normal, rather than having a special 
+    constructor just for that.  Now for the typing judgment, we can similarly use sorts to define a single type separated in two sorts :
+
+    \begin{lstlisting}[mathescape, basicstyle=\fontfamily{lmvtt}\selectfont]
+      LF has_type : tm -> tp -> type =
+        | check : normal -> tp -> sort
+        | synth : neutral -> tp -> sort
+        | ht_switch : synth R A -> check R A
+        | ht_const : check const base
+        | ht_lam : ({x : neutral} synth x A -> check M B) 
+                   -> check (lam M) (arr A B)
+        |ht_app : synth R (arr A B) -> check M A -> synth (app R M) B
+      ;
+    \end{lstlisting}
+
+    So, the use of refinments allows us to give a much more compact encoding of the types.
+
+
+    \textbf{Note}.  There should be at least one proof in the example section
+
+    \section{Data-level}
     The data-level of Beluga includes the usual terms, types, and kinds, but also contexts and substitutions.  We add to the type level a notion of sorts,
     and to the kind level a similar notion of classes.  Contexts are classified using a notion of schema, which, in our extension, are built out of
     world declarations.  A world is a record of assumptions satisfying certain properties.  To ensure well-formedness of worlds, we use two syntactic
     categories : blocks and worlds.  A block is a dependent record (i.e. $\Sigma$-type), and a world is a function space whose image is a block.
 
-    \subsubsection{Syntax}
-    \begin{figure}[]
+    \subsection{Syntax}
+    \begin{figure}[tbh]
         \centering
         \begin{tabular}{rrl}
             Signatures              & $ \Sigma ::= $  & $ \cdot \mid \Sigma, D $ \\
@@ -209,7 +316,7 @@
     Concerning the labels of worlds, I decided to take them out of the world's syntax itself, and rather consider them as names in declarations.  
     Ultimately, worlds should always be declared before they are used, so they would always be in the signature $\Sigma$.  This is just to avoid redundancy.
 
-    \subsubsection{Judgments}
+    \subsection{Judgments}
     As previously mentionned, most of the judgments take a slightly different form in the presence of refinements.  Let's first look at a 
     quick summary of the judgments :
 
@@ -731,7 +838,8 @@
     \end{align*}
 
     % Sub-worlds
-    $\boxed{ \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$ \\
+    $\boxed{ \Delta; \Psi \vdash_\Sigma W_1 \leq W_2}$
+
     \begin{align*}
       & \infer{\Delta; \Psi \vdash B_1 \leq B_2 \quad (\text{as worlds})}
               {
@@ -770,12 +878,12 @@
       & \infer{\Delta; \Psi \vdash \Xi_1 + \Xi_2 \leq \Xi_2 + \Xi_1}{\Delta; \Psi \vdash \Xi_1 + \Xi_2 \ \schema}
     \end{align*}
 
-    \subsection{Computation-level}
+    \section{Computation-level}
     We can lift the data-level refinements to the computation-level to obtain a restricted notion of refinements where the user does not directly
     specify any sorts.  It could be interesting to have a full blown refinement type system, and it should not complicate matters too much.
 
-    \subsubsection{Syntax}
-    \begin{figure}[]
+    \subsection{Syntax}
+    \begin{figure}[tbh]
       \centering
       \begin{tabular}{rrl}
         Contexts                & $\Gamma ::=$ & $\cdot \mid \Gamma, y{::}\mu \sqsubset \kappa$ \\
@@ -811,7 +919,7 @@
 
     (3) It may be better to have $\Pi x{:}A[\Psi].\kappa$ kinds, and similarly for classes.
 
-    \subsubsection{Judgments}
+    \subsection{Judgments}
     We have the follow computation level judgments :
 
     \begin{tabular}{ll}
@@ -960,9 +1068,9 @@
     $\boxed{ \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
     
     \begin{align*}
-      & \infer{ \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau}
+      & \infer{\Delta; \Gamma \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau}
         {
-           \Delta; \Gamma \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau
+          \Delta; \Gamma \vdash e \Lar \mu \sqsubset \tau
         } &
       & \infer{ \Delta; \Gamma \vdash y \Rar \mu \sqsubset \tau}{y{::}\mu \sqsubset \tau \in \Gamma}
     \end{align*}
@@ -1046,11 +1154,8 @@
             }
     \end{align*}
 
-    \section{Constructor subtyping}
-    TBD
+    \section{Operational Semantics}
 
-    \section{Ornaments}
-    TBD
 
     \bibliographystyle{acm}
     \bibliography{bibliography}    
