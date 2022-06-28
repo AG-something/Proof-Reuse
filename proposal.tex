@@ -30,6 +30,7 @@
 \theoremheaderfont{\bf}
 \theorembodyfont{\normalfont}
 
+
 \newtheorem*{theorem}{Theorem}[section]
 \newtheorem*{lemma}[subsection]{Lemma}
 \newtheorem{cor}[subsection]{Corollary}
@@ -53,6 +54,11 @@
 
 \newcommand{\mlcomment}[1]{} % multi-line comments (not great since it still processes the argument)
 
+
+% Calligraphic letters
+\newcommand{\D}{\mathcal{D}}
+
+
 % Symbols
 \newcommand{\Rar}{\Rightarrow}
 \newcommand{\Lar}{\Leftarrow}
@@ -75,6 +81,7 @@
 \newcommand{\case}{\texttt{case}}
 \newcommand{\of}{\texttt{of}}
 \newcommand{\bbox}{\texttt{box}}
+\newcommand{\sbbox}{\texttt{sbox}}
 
 % Judgments
 \newcommand{\block}{\texttt{block}}
@@ -299,6 +306,9 @@
         \caption{Syntax of data-level}
         \label{fig:SyntaxData}
     \end{figure}
+
+    \textbf{Note}.  $\sbbox$ expressions are not fully added yet.  In particular, they should also be a part of branches, but I still need to figure
+    out the correct rule (it should be similar to the other rule for branches).
 
     The updated syntax of the language is given in Figure \ref{fig:SyntaxData}.  Most of the syntax that was already present in Beluga remains 
     unchanged (kinds, types, terms, and substitution, to be precise).  The main differences are in the contexts and signatures, where assumptions
@@ -896,8 +906,9 @@
                                                   \mid \top \mid \mu_1 \land \mu_2$ \\
                                 &              & \\
         Checked expressions     & $e ::=$      & $i \mid \rec \ f.e \mid \fn \ y.e \mid \Lambda \psi. e \mid \lambda^\square u.e 
-                                                  \mid \bbox(\Psi.M) \mid \case \ i \ \of \ bs$ \\
-        Synthesized expressions & $i ::=$      & $y \mid i \ e \mid i \ \lceil \Psi \rceil \mid i \ \lceil \Psi. N \rceil \mid ( e{::} \mu \sqsubset \tau)$ \\
+                                                  \mid \bbox(\hat{\Psi}.M) \mid \sbbox(\hat{\Psi}. \sigma) \mid \case \ i \ \of \ bs$ \\
+        Synthesized expressions & $i ::=$      & $y \mid i \ e \mid i \ \lceil \Psi \rceil \mid i \ \lceil \hat{\Psi}. N \rceil 
+                                                  \mid ( e{::} \mu \sqsubset \tau)$ \\
         Branch                  & $b ::=$      & $\Pi \Delta. \bbox(\Psi.M) {::} S[\Psi] \sqsubset A[\Psi] \mapsto e$ \\
         Branches                & $bs ::=$     & $\cdot \mid (b \mid bs)$
       \end{tabular}
@@ -1029,12 +1040,18 @@
            \Delta; \Gamma \vdash i \Rar \mu \sqsubset \tau
           &&
            \Delta; \Gamma \vdash \mu \leq \mu' \sqsubset \tau
-        } &
-      & \infer{ \Delta; \Gamma \vdash \bbox(\Psi. M) \Lar S[\Psi] \sqsubset A[\Psi]}
-        {
-           \Delta; \Psi \vdash M \Lar S \sqsubset A
-        }
+        } 
     \end{align*}
+    \begin{align*}
+      & \infer{ \Delta; \Gamma \vdash \bbox(\hat{\Psi}. M) \Lar S[\Psi] \sqsubset A[\Psi]}
+            {
+              \Delta; \Psi \vdash M \Lar S \sqsubset A
+            } &
+      & \infer{\Delta; \Gamma \vdash \sbbox(\hat{\Psi}. \sigma) \Lar \Psi'[\Psi]}
+            {
+              \Delta; \Psi \vdash \sigma \Lar \Psi'
+            }
+    \end{align*}q
     \begin{align*}
       & \infer{ \Delta; \Gamma \vdash \rec \ f.e \Lar \mu \sqsubset \tau}
         {
@@ -1063,6 +1080,9 @@
               \text{for all } k \  \Delta; \Gamma \vdash b_k \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau
             }
     \end{align*}
+
+    \textbf{Note}.  The rule for $\sbbox$ terms has a slightly different form since there isn't a clear notion of refinements for contexts.  This
+    reinforces the idea that there should be such a notion, since it makes a lot more sense to have all the checked expressions in the same judgment.
 
     % Expression sort/type synthesis
     $\boxed{ \Delta; \Gamma \vdash_\Sigma i \Rar \mu \sqsubset \tau}$
@@ -1156,6 +1176,300 @@
 
     \section{Operational Semantics}
 
+    Next, we define a small-step operational semantics for the computational level\footnote{The data level only allows terms that are already in normal form,
+    so there isn't any suitable notion of evaluation there.}, and we show that it satisfies type safety.
+
+    The sort/type annotations in terms of the form $(e :: \mu \sqsubset \tau)$ are irrelevant to the evaluation algorithm, and can therefore be erased.  
+    However, due the presence of dependent types in the language, we need to annotate branches with their sort/type.  This is important as we need to 
+    perform pattern unification in order to determine which branch must be taken when stepping a $\case$ expression, which requires unifying the sort/type 
+    of the guard with the sort/type of the pattern.  So, we need an annotation erasure algorithm, denoted $|e|$ and $|i|$ for checked and synthesized 
+    expressions, respectively.  A simple way to do this is to follow the sorting derivation and annotate each subterm of sort $S[\Psi] \sqsubset A[\Psi]$ with
+    its sort/type information, while removing all the annotations of the form $(e :: \mu \sqsubset \tau)$ \cite{PientkaDunfield2008}.
+
+    Now, the values of our language are the following :
+    
+    \begin{center}
+      \begin{tabular}{rrl}
+        Values & $v ::=$ & $\fn y.e \mid \Lambda \psi.e \mid \bbox(\hat{\Psi}. M) \mid \sbbox(\hat{\Psi}. \sigma)$
+      \end{tabular}
+    \end{center}
+
+    And our small-step semantics is given the following three judgments : 
+
+    \begin{center}
+      \begin{tabular}{ll}
+        $e \rar e'$                                    & $e$ evaluates to $e'$ in one step \\
+        $(\bbox(\hat{\Psi}.M) \doteq b) \rar e'$       & branch $b$ matches $\bbox(\hat{\Psi}.M)$ and steps to $e'$ \\
+        $(\sbbox(\hat{\Psi}.\sigma) \doteq b) \rar e'$ & branch $b$ matches $\sbbox(\hat{\Psi}.\sigma)$ and steps to $e'$
+      \end{tabular}
+    \end{center}
+
+    Which are defined by the following rules :
+
+    $\boxed{e \rar e'}$
+
+    \begin{align*}
+      & \infer{\rec \ f.e \rar [\rec \ f.e / f] e}{} &
+      & \infer{(\fn \ y. e) \ v \rar [v/y] e}{}
+    \end{align*}
+    \begin{align*}
+      & \infer{(e_1 \ e_2) \rar (e_1' \ e_2)}{e_1 \rar e_1'} &
+      & \infer{(e_1 \ e_2) \rar (e_1 \ e_2')}{e_2 \rar e_2'}
+    \end{align*}
+    \begin{align*}
+      & \infer{(\Lambda \psi. e) \ \lceil \Psi \rceil \rar \llbracket \Psi / \psi \rrbracket e}{} &
+      & \infer{(e \ \lceil \Psi \rceil) \rar (e' \ \lceil \Psi \rceil)}{e \rar e'}
+    \end{align*}
+    \begin{align*}
+      & \infer{(\case \ \bbox(\hat{\Psi}. M) \ \of \ b_1 \mid ... \mid b_n) \rar e'}
+              {\cdot ; \cdot \vdash ( \bbox(\hat{\Psi}.M) \doteq b_i) \rar e'} &
+      & \infer{(\case \ \sbbox(\hat{\Psi}. \sigma) \ \of \ b_1 \mid ... \mid b_n) \rar e'}
+              {\cdot ; \cdot \vdash ( \sbbox(\hat{\Psi}.\sigma) \doteq b_i) \rar e'}
+    \end{align*}
+    \begin{align*}
+      \infer{\case \ i \ \of \ bs \rar \case i' \ \of \ bs}{i \rar i'}
+    \end{align*}
+
+    $\boxed{(\bbox(\hat{\Psi}.M) \doteq b) \rar e'}$
+
+    \begin{align*}
+      \infer{(\bbox(\hat{\Psi}.M) \doteq \Pi \Delta. \bbox(\hat{\Psi}. M') \mapsto e) \rar \llbracket \theta \rrbracket e}
+            {
+              \Delta; \Psi \vdash M' \doteq M / \theta
+            }
+    \end{align*}
+
+    $\boxed{(\sbbox(\hat{\Psi}.\sigma) \doteq b) \rar e'}$
+
+    \begin{align*}
+      \infer{(\sbbox(\hat{\Psi}.\sigma) \doteq \Pi \Delta. \sbbox(\hat{\Psi}. \sigma') \mapsto e) \rar \llbracket \theta \rrbracket e}
+            {
+              \Delta; \Psi \vdash \sigma' \doteq \sigma / \theta
+            }
+    \end{align*}
+
+    \textbf{Note}.  This is the second place where higher-order pattern unification is used, and I still haven't really figured out how it works.
+
+    In order to guarantee that a well-sorted $\case$ expression steps, we need to ensure that one of the patterns matches the guard.  Therefore, in order
+    to prove type safety, we first need a coverage checking algorithm.  For now, let's assume that the algorithm shown in \cite{DunfieldPientka2008} can 
+    be adapated to our language with refinements.  
+
+    An other key ingredient in the proof of type safety are substitution principles.  These principles are known to hold when refinements are not present 
+    in the language \cite{PientkaDunfield2008, Nanevski2008}, and \cite{LovasPfenning2010} discusses them for LF with refinement, although there is no notion
+    of contextual substitution in their work.  So, it can be expected that the principles will indeed hold in our language.  For now, we assume that this 
+    is the case.
+
+    The only thing missing before we can prove type safety is a canonical forms lemma :
+
+    \begin{lemma}[Canonical Forms]
+      \leavevmode
+      \begin{enumerate}
+        \item If $i$ is a value and $\cdot ; \cdot \vdash i \Rar \mu \rar \mu' \sqsubset \tau \rar \tau'$, then $|i| = \fn \ y.|e'|$ and
+          $\cdot; y{::}\mu \sqsubset \tau \vdash e' \Lar \mu' \sqsubset \tau'$.
+
+        \item If $i$ is a value and $\cdot; \cdot \vdash i \Rar \Pi^\square u {::} S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau$, then 
+          $|i| = \lambda^\square u. |e'|$ and $u{::}S[\Psi] \sqsubset A[\Psi] ; \cdot \vdash e' \Lar \mu \sqsubset \tau$.
+
+        \item If $i$ is a value and $\cdot ; \cdot \vdash i \Rar \Pi \psi{:}\Xi. \mu \sqsubset \Pi \psi{:}\Xi. \tau$, then $|i| = \Lambda \psi. |e'|$ and
+          $\psi{:}\Xi ; \cdot \vdash e' \Lar \mu \sqsubset \tau$.
+
+        \item If $i$ is a value and $\cdot ; \cdot \vdash i \Rar S[\Psi] \sqsubset A[\Psi]$, then $|i| = \bbox(\hat{\Psi}. M) :: S[\Psi] \sqsubset A[\Psi]$ 
+          and $\cdot ; \Psi \vdash M \Lar S \sqsubset A$.
+
+        \item If $i$ is a value and $\cdot ; \cdot \vdash i \Rar \Psi'[\Psi]$, then $|i| = \sbbox(\hat{\Psi}. \sigma) :: \Psi'[\Psi]$ and 
+          $\cdot; \Psi \vdash \sigma \Lar \Psi'$.
+      \end{enumerate}
+
+      \begin{proof}
+        
+      \end{proof}
+    \end{lemma}
+
+    \textbf{Note}.  The statement of the lemma is a little weird.  None of our values can be synthesized except via the type annotation rule, so we are 
+    really looking at checked expressions.  However, we need synthesized expressions to solve the case where the switch rule is used, as otherwise we 
+    don't have an inductive hypothesis.  In addition, we assume that $i$, but immediately conclude that $i$ is of the form $(e :: \mu \sqsubset \tau)$, 
+    which isn't really a value (the value would be $e$ in this case).  So, is it $|i|$ that is a value?
+
+    And finally, we reach the target result of this section :
+
+    \begin{theorem}[Type Safety]
+      \leavevmode
+      \begin{enumerate}
+        \item If $\cdot; \cdot \vdash e \Lar \mu \sqsubset \tau$ and $e$ coverage checks, then either $|e|$ is a value. or there is some $e'$ such that 
+          $|e| \rar |e'|$ and $\cdot ; \cdot \vdash e' \Lar \mu \sqsubset \tau$.
+
+        \item If $\cdot; \cdot \vdash i \Rar \mu \sqsubset \tau$ and $i$ coverage checks, then either $|i|$ is a value. or there is some $i'$ such that 
+          $|i| \rar |i'|$ and $\cdot ; \cdot \vdash i' \Rar \mu \sqsubset \tau$.
+      \end{enumerate}
+      
+      \begin{proof}
+        By simultaneous induction on the hypothesized derivation $\D$.
+        \begin{enumerate}
+          \item There are several cases to consider.  Consider first the following five rules :
+            
+            \begin{align*}
+              & \infer{\cdot; \cdot \vdash \bbox(\hat{\Psi}.M) \Lar S[\Psi] \sqsubset A[\Psi]}
+                      {\cdot; \Psi \vdash M \Lar S \sqsubset A} &
+              & \infer{\cdot ; \cdot \vdash \sbbox(\hat{\Psi}. \sigma) \Lar \Psi'[\Psi]}
+                        {\cdot; \Psi \vdash \sigma \Lar \Psi'} \\
+              & \infer{\cdot ; \cdot \vdash \fn \ y.e \Lar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2}
+                      { \cdot; y{::}\mu_1 \sqsubset \tau_1 \vdash e \Lar \mu_2 \sqsubset \tau_2} &
+              & \infer{\cdot; \cdot \vdash \lambda^\square u.e \Lar \Pi^\square u{::}S[\Psi]. \mu \sqsubset \Pi^\square u{:}A[\Psi].\tau}
+                      {u{::}S[\Psi] \sqsubset A[\Psi] ; \cdot \vdash e \Lar \mu \sqsubset \tau}
+            \end{align*}
+            \begin{align*}
+              \infer{\cdot; \cdot \vdash \Lambda \psi. e \Lar \Pi \psi{:} \Xi. \mu \sqsubset \Pi \psi{:}\Xi. \tau}
+                    {\psi {:} \Xi ; \cdot \vdash e \Lar \mu \sqsubset \tau}
+            \end{align*}
+            
+            In each of the above rules, the resulting term is already a value, so there is nothing more to do.  This leaves us with three other cases :
+
+            \begin{description}
+              \item[] \textbf{Case} $\D :: \infer{\cdot ; \cdot \vdash i \Lar \mu \sqsubset \tau}
+                {
+                  \begin{array}{c}
+                    \D_1 \\
+                    \cdot ; \cdot \vdash i \Rar \mu' \sqsubset \mu
+                  \end{array}
+                  &&
+                  \begin{array}{c}
+                    \D_2
+                    \cdot ; \cdot \vdash \mu' \leq \mu \sqsubset \tau
+                  \end{array}
+                }$
+                
+                Either $i$ is a value, or $|i| \rar |i'|$ and $\cdot; \cdot \vdash i' \Rar \mu' \sqsubset \tau$, by inductive hypothesis on $\D_1$. \\
+                If $i$ is a value, then there is nothing more to do. \\
+                If $|i| \rar |i'|$ and $\D' :: \cdot; \cdot \vdash i' \Rar \mu' \sqsubset \tau$, then we obtain $\cdot ; \cdot \vdash i' \Lar \mu \sqsubset \tau$ 
+                by using the switch rule with $\D'$ and $\D_2$. \\
+
+              \item[] \textbf{Case} $\D :: \infer{\cdot; \cdot \vdash \rec \ f.e \Lar \mu \sqsubset \tau}
+                {\cdot; f {::}\mu \sqsubset \tau \vdash e \Lar \mu \sqsubset \tau}$
+
+                We have $\cdot; \cdot \vdash \rec \ f.e \Lar \mu \sqsubset \tau$ and $\cdot; f {::} \mu \sqsubset \tau \vdash e \Lar \mu \sqsubset \tau$ 
+                by assumption. \\
+                Then $\cdot; \cdot \vdash [\rec \ f.e / f] e \Lar \mu \sqsubset \tau$ by the substitution principle. \\
+                This is what we wanted to show since $\rec \ f.e \rar [\rec \ f.e / f] e$ by definition of the stepping relation. \\
+
+              \item[] \textbf{Case} $ \D :: \infer{\cdot ; \cdot \vdash \case \ i \ \of \ b_1 \mid ... \mid b_n \Lar \mu \sqsubset \tau}
+                {
+                  \begin{array}{c}
+                    \D_0 \\
+                    \cdot ; \cdot \vdash i \Rar S[\Psi] \sqsubset A[\Psi]
+                  \end{array}
+                  &&
+                  \begin{array}{c}
+                    \D_k \\
+                    \text{for all k, } \cdot ; \cdot \vdash b_k \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau
+                  \end{array}
+                }$
+
+                TODO.  Missing a lemma : If $\cdot; \cdot \vdash i \Rar S[\Psi] \sqsubset A[\Psi]$, and 
+                $\cdot; \cdot \vdash b \Lar_{S[\Psi] \sqsubset A[\Psi]} \mu \sqsubset \tau$, and $ (i \doteq b) \rar e$, then 
+                $\cdot; \cdot \vdash e \Lar \mu \sqsubset \tau$.
+            \end{description}
+            
+          \item We again have a few cases to consider :
+           
+            \begin{description}
+              \item[] \textbf{Case} $\D :: \infer{\cdot ; \cdot \vdash (e {::} \mu \sqsubset \tau) \Rar \mu \sqsubset \tau}
+                {
+                  \begin{array}{c}
+                    \D' \\
+                    \cdot ; \cdot \vdash e \Lar \mu \sqsubset \tau
+                  \end{array}
+                }$
+
+                Either $e$ is a value, or $|e| \rar |e'|$ and $\cdot; \cdot \vdash e' \Lar \mu \sqsubset \tau$, by inductive hypothesis on $\D'$. \\
+                This is what we wanted since $|(e {::} \mu \sqsubset \tau)| = |e|$.
+
+              \item[] \textbf{Case} $\D :: \infer{\cdot; \cdot \vdash i \ e \Rar \mu_2 \sqsubset \tau_2}
+                {
+                  \begin{array}{c}
+                    \D_1 \\
+                    \cdot; \cdot \vdash i \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2
+                  \end{array}
+                  &&
+                  \begin{array}{c}
+                    \D_2 \\
+                    \cdot; \cdot \vdash e \Lar \mu_1 \sqsubset \tau_1
+                  \end{array}
+                }$
+
+                Either $|i|$ is a value, or $|i| \rar |i'|$ and $\cdot; \cdot \vdash i' \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2$, by 
+                inductive hypothesis on $\D_1$.  \\
+                Either $|e|$ is a value, or $|e| \rar |e'|$ and $\cdot; \cdot \vdash e' \Lar \mu_1 \sqsubset \tau_1$, by inductive hypothesis on $\D_2$. \\
+                This gives us three sub-cases to consider :
+                \begin{description}
+                  \item[] \textbf{Sub-case} $|i| \rar |i'|$ and $\cdot ; \cdot \vdash i' \Rar \mu_1 \rar \mu_2 \sqsubset \tau_1 \rar \tau_2$
+
+                    We have $|i \ e| \rar |i' \ e|$ by definition of the stepping relation. \\
+                    And we obtain $\cdot; \cdot \vdash i' \ e \Rar \mu_2 \sqsubset \tau_2$ via the same rule that $\D$ ends with.
+
+                  \item[] \textbf{Sub-case} $|e| \rar |e'|$ and $\cdot; \cdot \vdash e' \Lar \mu_1 \sqsubset \tau_1$
+                    
+                    We have $|i \ e| \rar |i \ e'|$ by definition of the stepping relation. \\
+                    And we obtain $\cdot; \cdot \vdash i \ e' \Rar \mu_2 \sqsubset \tau_2$ via the same rule that $\D$ ends with.
+
+                  \item[] \textbf{Sub-case} Both $|i|$ and $|e|$ are values
+
+                    Then $|i| = \fn \ y. |e'|$ and $\cdot; y{::} \mu_1 \sqsubset \tau_1 \vdash e' \Lar \mu_2 \sqsubset \tau_2$ by the canonical forms lemma. \\
+                    We have $(\fn \ y. |e'|) \ |e| \rar [e/y] e'$ by definition of the stepping relation. \\
+                    And we have $\cdot; \cdot \vdash [e/y] e' \Lar \mu_2 \sqsubset \tau_2$ by the substitution principle.
+                \end{description}
+
+              \item[] \textbf{Case} $\D :: \infer{\cdot; \cdot \vdash i \ \lceil\hat{\Psi}. M\rceil 
+                                                                              \Rar \llbracket \hat{\Psi}.M / y \rrbracket (\mu \sqsubset \tau)}
+                {
+                  \begin{array}{c}
+                    \D_1 \\
+                    \cdot; \cdot \vdash i \Rar \Pi^\square u{::}S[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau
+                  \end{array}
+                  &&
+                  \begin{array}{c}
+                    \phantom{\D_2} \\
+                    \cdot; \Psi \vdash M \Lar S \sqsubset A
+                  \end{array}
+                }$
+
+                Either $|i|$ is a value, or $|i| \rar |i'|$ and $\cdot; \cdot \vdash i' \Rar \Pi^\square u{::}S[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau$, 
+                by inductive hypothesis on $\D_1$. \\
+                This gives us two sub-cases :
+                \begin{description}
+                  \item[] \textbf{Sub-case} $|i|$ is a value
+
+                    Then $|i| = \lambda^\square u. |e'|$ and $u{::}S[\Psi] \sqsubset A[\Psi] ; \cdot \vdash e \Lar \mu \sqsubset \tau$, by the canonical 
+                    forms lemma. \\
+                    We have $(\lambda^\square u. |e'|) \ \lceil \hat{\Psi}. M \rceil \rar \llbracket \hat{\Psi}.M / u \rrbracket e$ by definition of the
+                    stepping relation. \\
+                    And we have $\cdot; \cdot \vdash \llbracket \hat{\Psi}.M / u \rrbracket e \Lar \llbracket \hat{\Psi}.M / u \rrbracket ( \mu \sqsubset \tau)$
+                    by the substitution principle.
+
+                  \item[] \textbf{Sub-case} $|i| \rar |i'|$ and $\cdot; \cdot \vdash i' \Rar \Pi^\square u{::}S[\Psi].\mu \sqsubset \Pi^\square u{:}A[\Psi]. \tau$
+
+                    We have $|i \ \lceil \hat{\Psi}. M \rceil| \rar |i' \ \lceil \hat{\Psi}. M \rceil|$, by definition of the stepping relation. \\
+                    And we obtain $\cdot; \cdot \vdash i' \ \lceil \hat{\Psi}. M \rceil \Rar \mu \sqsubset \tau$ via the same that $\D$ ends with.
+                \end{description}
+
+              \item[] \textbf{Case} $\D :: \infer{\cdot; \cdot \vdash i \ \lceil \Psi \rceil \Rar \llbracket \Psi / \psi \llbracket (\mu \sqsubset \tau)}
+                {
+                  \begin{array}{c}
+                    \D_1 \\
+                    \cdot; \cdot \vdash i \Rar \Pi \psi {:} \Xi. \mu \sqsubset \Pi \psi{:}\Xi. \tau
+                  \end{array}
+                  &&
+                  \begin{array}{c}
+                    \D_2 \\
+                    \cdot; \cdot \vdash \Psi : \Xi
+                  \end{array}
+                }$
+
+                Similar to the previous case.
+
+            \end{description}
+        \end{enumerate}
+      \end{proof}
+    \end{theorem}
 
     \bibliographystyle{acm}
     \bibliography{bibliography}    

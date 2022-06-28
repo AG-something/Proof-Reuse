@@ -1,10 +1,18 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{BarthesFrade1999}
 {\sc Barthe, G., and Frade, M.~J.}
 \newblock Constructor subtyping.
 \newblock In {\em Programming Languages and Systems\/} (Berlin, Heidelberg,
   1999), S.~D. Swierstra, Ed., Springer Berlin Heidelberg, pp.~109--127.
+
+\bibitem{DunfieldPientka2008}
+{\sc Dunfield, J., and Pientka, B.}
+\newblock Case analysis of higher-order data.
+\newblock {\em Electronic Notes in Theoretical Computer Science 228\/} (2009),
+  69--84.
+\newblock Proceedings of the International Workshop on Logical Frameworks and
+  Metalanguages: Theory and Practice (LFMTP 2008).
 
 \bibitem{LF1987}
 {\sc Harper, R., Honsell, F., and Plotkin, G.~D.}

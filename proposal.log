@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.11.30)  27 JUN 2022 21:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.11.30)  28 JUN 2022 19:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -847,24 +847,24 @@ File: l3backend-pdfmode.def 2020-02-03 L3 backend support: PDF mode
 (./proposal.aux)
 \openout1 = `proposal.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 96.
-LaTeX Font Info:    ... okay on input line 96.
-LaTeX Font Info:    Trying to load font information for T1+lmr on input line 96
-.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 103.
+LaTeX Font Info:    ... okay on input line 103.
+LaTeX Font Info:    Trying to load font information for T1+lmr on input line 10
+3.
  (/usr/share/texmf/tex/latex/lm/t1lmr.fd
 File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
@@ -938,7 +938,7 @@ e
 ABD: EveryShipout initializing macros
 \c@lstlisting=\count345
 \AtBeginShipoutBox=\box69
-Package hyperref Info: Link coloring ON on input line 96.
+Package hyperref Info: Link coloring ON on input line 103.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2019/09/16 v2.46 Cross-referencing by name of section
@@ -951,91 +951,129 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count346
 )
-LaTeX Info: Redefining \ref on input line 96.
-LaTeX Info: Redefining \pageref on input line 96.
-LaTeX Info: Redefining \nameref on input line 96.
+LaTeX Info: Redefining \ref on input line 103.
+LaTeX Info: Redefining \pageref on input line 103.
+LaTeX Info: Redefining \nameref on input line 103.
 
 (./proposal.out) (./proposal.out)
 \@outlinefile=\write5
 \openout5 = `proposal.out'.
 
 \c@pllisting=\count347
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 9
-8.
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
+05.
  (/usr/share/texmf/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 9
-8.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
+05.
 
 (/usr/share/texmf/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-98.
+105.
 
 (/usr/share/texmf/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-98.
+105.
 
 (/usr/share/texmf/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 98.
+(Font)              <12> on input line 105.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 98.
+(Font)              <8> on input line 105.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 98.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 98.
-
+(Font)              <6> on input line 105.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 105
+.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 98.
-
+LaTeX Font Info:    Trying to load font information for U+msb on input line 105
+.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+stmry on input line 9
-8.
+LaTeX Font Info:    Trying to load font information for U+stmry on input line 1
+05.
 
 (/usr/share/texlive/texmf-dist/tex/latex/stmaryrd/Ustmry.fd)
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 129.
+(Font)              <10.95> on input line 136.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-62.
+69.
  (/usr/share/texmf/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for T1+lmvtt on input line 
-166.
+173.
 
 (/usr/share/texmf/tex/latex/lm/t1lmvtt.fd
 File: t1lmvtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [2] [3]
 
 LaTeX Font Warning: Font shape `U/stmry/b/n' undefined
-(Font)              using `U/stmry/m/n' instead on input line 270.
+(Font)              using `U/stmry/m/n' instead on input line 277.
 
-[4] [5] [6] [7] [8] [9] [10] [11] [12] (./proposal.bbl [13])
+[4] [5] [6] [7] [8] [9]
+Overfull \hbox (16.46797pt too wide) in paragraph at lines 898--915
+ [][] 
+ []
+
+[10] [11] [12]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <9> on input line 1180.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 1180.
+ [13] [14]
+Package hyperref Info: bookmark level for unknown lemma defaults to 0 on input 
+line 1264.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 1285.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 1285.
+
+Underfull \hbox (badness 10000) in paragraph at lines 1285--1286
+
+ []
+
+Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
+t line 1295.
+[15]
+Underfull \hbox (badness 10000) in paragraph at lines 1341--1345
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1349--1353
+
+ []
+
+[16]
+Underfull \hbox (badness 10000) in paragraph at lines 1471--1472
+
+ []
+
+(./proposal.bbl [17])
 \tf@thm=\write6
 \openout6 = `proposal.thm'.
 
- [14]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1162.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1162.
-
-(./proposal.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1162.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1162.
+ [18]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1476.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1476.
+ (./proposal.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1476.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1476.
 
 Package rerunfilecheck Info: File `proposal.out' has not changed.
 (rerunfilecheck)             Checksum: 9A135AE666C5E76E44A646A599A5EA5E;616.
@@ -1043,14 +1081,14 @@ Package rerunfilecheck Info: File `proposal.out' has not changed.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1162.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1476.
  ) 
 Here is how much of TeX's memory you used:
- 21959 strings out of 481239
- 389443 string characters out of 5920376
- 664815 words of memory out of 5000000
- 36665 multiletter control sequences out of 15000+600000
- 605259 words of font info for 77 fonts, out of 8000000 for 9000
+ 22030 strings out of 481239
+ 390215 string characters out of 5920376
+ 664872 words of memory out of 5000000
+ 36704 multiletter control sequences out of 15000+600000
+ 628107 words of font info for 103 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  60i,25n,60p,423b,1805s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
@@ -1061,17 +1099,18 @@ f/fonts/type1/public/lm/lmcsc10.pfb></usr/share/texmf/fonts/type1/public/lm/lmm
 i10.pfb></usr/share/texmf/fonts/type1/public/lm/lmmi8.pfb></usr/share/texmf/fon
 ts/type1/public/lm/lmmib10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr10.pf
 b></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/fonts/typ
-e1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr8.pfb></usr/s
-hare/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texmf/fonts/type1/publi
-c/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb></usr/share/t
-exmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts/type1/public/lm/lm
-tt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmvtt10.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/stmaryrd/stmary10.pfb>
-Output written on proposal.pdf (14 pages, 341597 bytes).
+e1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmr6.pfb></usr/s
+hare/texmf/fonts/type1/public/lm/lmr8.pfb></usr/share/texmf/fonts/type1/public/
+lm/lmr9.pfb></usr/share/texmf/fonts/type1/public/lm/lmri10.pfb></usr/share/texm
+f/fonts/type1/public/lm/lmsy10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy
+6.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb></usr/share/texmf/fonts
+/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/type1/public/lm/lmvtt10.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/stmaryrd/stmary10.pfb>
+Output written on proposal.pdf (18 pages, 398933 bytes).
 PDF statistics:
- 282 PDF objects out of 1000 (max. 8388607)
- 245 compressed objects within 3 object streams
- 79 named destinations out of 1000 (max. 500000)
+ 329 PDF objects out of 1000 (max. 8388607)
+ 286 compressed objects within 3 object streams
+ 96 named destinations out of 1000 (max. 500000)
  101 words of extra memory for PDF output out of 10000 (max. 10000000)
 
